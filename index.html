@@ -1,0 +1,3140 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>முக்கண் தேங்காய் உரிக்கும் சங்கம்</title>
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#15803d">
+
+  <!-- Offline/In-browser OCR engine fallback -->
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans Tamil", sans-serif; }
+    body { background-color: #f1f5f9; color: #1e293b; padding: 12px; max-width: 540px; margin: 0 auto; }
+    
+    header {
+      background: linear-gradient(135deg, #15803d, #166534);
+      color: white; padding: 14px; border-radius: 14px; text-align: center;
+      box-shadow: 0 4px 12px rgba(22, 101, 52, 0.25); margin-bottom: 12px;
+    }
+    header h1 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+    header p { font-size: 12px; opacity: 0.95; }
+
+    /* Top Tabs */
+    .tab-nav {
+      display: flex; background: #e2e8f0; padding: 4px; border-radius: 12px;
+      margin-bottom: 12px; gap: 4px;
+    }
+    .tab-btn {
+      flex: 1; padding: 10px 4px; border: none; background: transparent;
+      font-weight: 700; font-size: 13px; border-radius: 8px; cursor: pointer; color: #475569;
+    }
+    .tab-btn.active { background: white; color: #15803d; box-shadow: 0 2px 5px rgba(0,0,0,0.08); }
+
+    /* Scanner Box (AI Scanner) */
+    .scanner-box {
+      background: #eff6ff; border: 2px dashed #3b82f6; border-radius: 14px;
+      padding: 12px; text-align: center; margin-bottom: 12px;
+    }
+    .scanner-box h3 { font-size: 14px; color: #1e40af; margin-bottom: 4px; }
+    .camera-btns { display: flex; gap: 8px; justify-content: center; margin-top: 8px; }
+    .btn-cam {
+      background: #2563eb; color: white; border: none; padding: 10px 14px;
+      border-radius: 8px; font-weight: bold; font-size: 13px; cursor: pointer;
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .btn-gallery {
+      background: #15803d; color: white; border: none; padding: 10px 14px;
+      border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer;
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    #ocrStatus {
+      display: none; margin-top: 10px; padding: 8px; background: white;
+      border-radius: 8px; font-size: 12px; font-weight: bold; color: #1e40af; border: 1px solid #bfdbfe;
+    }
+    .preview-img { max-width: 100%; max-height: 140px; border-radius: 8px; margin-top: 8px; display: none; object-fit: contain; margin-left: auto; margin-right: auto; }
+
+    /* On-Screen API Key Box (Avoids prompt block on Android) */
+    .key-drawer {
+      display: none; background: #fffbeb; border: 1.5px solid #fde047;
+      border-radius: 10px; padding: 10px; margin-top: 10px; text-align: left;
+    }
+    .key-drawer label { font-size: 12px; font-weight: bold; color: #92400e; margin-bottom: 4px; display: block; }
+    .key-drawer .input-row { display: flex; gap: 6px; }
+    .key-drawer input { font-size: 12px; padding: 8px 10px; flex: 1; }
+    .key-drawer button { background: #b45309; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; font-size: 12px; cursor: pointer; }
+
+    /* OCR Result List */
+    #ocrResultBox {
+      display: none; background: #f8fafc; border: 1.5px solid #3b82f6;
+      border-radius: 12px; padding: 10px; margin-top: 10px; text-align: left;
+    }
+    .ocr-item-row {
+      display: flex; gap: 4px; align-items: center; background: white;
+      padding: 6px 6px; border-radius: 8px; margin-bottom: 6px; border: 1px solid #cbd5e1;
+    }
+    .ocr-item-row input.edit-name {
+      flex: 1.6; font-weight: bold; font-size: 12.5px; border: 1px solid #cbd5e1;
+      padding: 6px 6px; border-radius: 6px; outline: none; min-width: 70px;
+    }
+    .ocr-item-row input.edit-count {
+      flex: 1.1; font-weight: bold; font-size: 12.5px; color: #15803d; border: 1px solid #cbd5e1;
+      padding: 6px 4px; border-radius: 6px; text-align: right; outline: none; min-width: 50px;
+    }
+    .ocr-item-row input.edit-adv {
+      flex: 1; font-weight: bold; font-size: 12px; color: #dc2626; border: 1px solid #cbd5e1;
+      padding: 6px 4px; border-radius: 6px; text-align: right; outline: none; min-width: 45px;
+    }
+    .ocr-item-row input.edit-pidi {
+      flex: 1; font-weight: bold; font-size: 12px; color: #b45309; border: 1px solid #cbd5e1;
+      padding: 6px 4px; border-radius: 6px; text-align: right; outline: none; min-width: 45px;
+    }
+    .ocr-item-row button.btn-row-del {
+      background: #fee2e2; color: #dc2626; border: none; width: 24px; height: 26px;
+      border-radius: 6px; cursor: pointer; font-weight: bold; flex-shrink: 0;
+    }
+    .btn-apply-ocr {
+      width: 100%; background: #16a34a; color: white; border: none; padding: 10px;
+      border-radius: 8px; font-weight: bold; font-size: 13px; cursor: pointer; margin-top: 6px;
+    }
+
+    /* Form Card */
+    .form-card {
+      background: white; padding: 14px; border-radius: 14px; margin-bottom: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05); transition: all 0.3s;
+    }
+    .form-card.editing-mode {
+      border: 2px solid #ca8a04;
+      background: #fefce8;
+    }
+    .form-title { font-size: 14px; font-weight: 700; margin-bottom: 10px; color: #15803d; }
+    
+    .rate-card {
+      background: #f0fdf4; border: 1.5px solid #86efac; padding: 8px 10px;
+      border-radius: 10px; margin-bottom: 12px;
+    }
+    .rate-title { font-size: 12px; font-weight: 700; color: #166534; margin-bottom: 6px; }
+    .rate-options { display: flex; gap: 6px; align-items: center; }
+    .rate-chip {
+      flex: 1; text-align: center; padding: 6px 2px; border: 1.5px solid #cbd5e1;
+      border-radius: 6px; background: white; font-size: 12px; font-weight: 700; cursor: pointer;
+    }
+    .rate-chip.active { background: #15803d; color: white; border-color: #15803d; }
+    .custom-rate-input { width: 65px !important; padding: 5px !important; font-size: 12px !important; font-weight: 700 !important; text-align: center !important; }
+
+    .form-group { margin-bottom: 10px; position: relative; }
+    label { display: block; font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 4px; }
+    input {
+      width: 100%; padding: 10px 12px; border: 1.5px solid #cbd5e1; border-radius: 8px;
+      font-size: 15px; outline: none; background: white;
+    }
+    input:focus { border-color: #15803d; }
+    .two-col-row { display: flex; gap: 8px; }
+    .two-col-row .form-group { flex: 1; }
+
+    /* Dropdown suggestions */
+    .suggestions-box {
+      position: absolute; top: 100%; left: 0; right: 0; background: white;
+      border: 2px solid #16a34a; border-radius: 8px;
+      max-height: 200px; overflow-y: auto; z-index: 9999; box-shadow: 0 8px 20px rgba(0,0,0,0.2); display: none;
+      margin-top: 2px;
+    }
+    .suggestion-item {
+      padding: 10px 12px; font-size: 14px; font-weight: 600; cursor: pointer;
+      border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between;
+    }
+    .suggestion-item:active { background: #dcfce7; }
+
+    .btn-group { display: flex; gap: 8px; margin-top: 4px; }
+    .btn-add {
+      flex: 1; background: #15803d; color: white; border: none; padding: 12px;
+      border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer;
+    }
+    .btn-add.btn-update { background: #ca8a04; }
+    .btn-cancel-edit {
+      background: #e2e8f0; color: #475569; border: none; padding: 12px 14px;
+      border-radius: 8px; font-size: 13px; font-weight: bold; cursor: pointer; display: none;
+    }
+
+    /* Entry list */
+    .entry-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+    .entry-item {
+      background: white; padding: 11px 12px; border-radius: 10px;
+      display: flex; justify-content: space-between; align-items: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05); border-left: 4px solid #16a34a;
+    }
+    .entry-info { flex: 1; }
+    .entry-info .name { font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 2px; }
+    .entry-info .wage-breakdown { font-size: 12px; color: #475569; line-height: 1.4; }
+    .entry-info .advance-tag { color: #dc2626; font-weight: 700; background: #fee2e2; padding: 1px 6px; border-radius: 4px; display: inline-block; }
+    .entry-info .pidi-tag { color: #b45309; font-weight: 700; background: #fef3c7; padding: 1px 6px; border-radius: 4px; display: inline-block; }
+    .entry-info .net-tag { color: #0369a1; font-weight: 800; }
+    .entry-info .breakdown { font-size: 10px; color: #047857; background: #ecfdf5; padding: 1px 5px; border-radius: 4px; display: inline-block; font-weight: bold; margin-top: 2px; }
+    
+    .entry-right-controls {
+      display: flex; align-items: center; gap: 6px; margin-left: 8px;
+    }
+    .entry-count-box { text-align: right; }
+    .entry-count { font-size: 14px; font-weight: 800; color: #15803d; background: #f0fdf4; padding: 3px 6px; border-radius: 6px; }
+    .entry-net-pay { font-size: 12px; font-weight: 800; color: #0284c7; margin-top: 2px; }
+
+    .btn-action-edit {
+      background: #fef3c7; color: #b45309; border: none; width: 32px; height: 32px;
+      border-radius: 6px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center;
+    }
+    .btn-action-del {
+      background: #fee2e2; color: #dc2626; border: none; width: 32px; height: 32px;
+      border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px; display: flex; align-items: center; justify-content: center;
+    }
+
+    /* Total Summary */
+    .total-card {
+      background: white; border-radius: 14px; padding: 12px; text-align: center;
+      margin-bottom: 12px; border: 2px solid #86efac;
+    }
+    .total-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; align-items: center; }
+    .total-col .t-title { font-size: 10.5px; color: #64748b; font-weight: 700; }
+    .total-col .t-val { font-size: 15px; font-weight: 800; color: #15803d; margin-top: 2px; }
+    .total-col.advance .t-val { color: #dc2626; }
+    .total-col.pidimaanam .t-val { color: #b45309; }
+    .total-col.net .t-val { color: #0284c7; font-size: 17px; }
+
+    /* Action Buttons */
+    .btn-save-batch {
+      width: 100%; background: linear-gradient(135deg, #0284c7, #0369a1); color: white;
+      border: none; padding: 14px; border-radius: 10px; font-size: 15px; font-weight: 800;
+      cursor: pointer; margin-bottom: 10px; box-shadow: 0 3px 8px rgba(2, 132, 199, 0.25);
+    }
+    .btn-whatsapp {
+      width: 100%; background: #25D366; color: white; border: none; padding: 12px;
+      border-radius: 10px; font-size: 14px; font-weight: bold; cursor: pointer; margin-bottom: 12px;
+    }
+
+    /* History Cards */
+    .search-card {
+      background: #e0f2fe; border: 1.5px solid #7dd3fc; border-radius: 12px;
+      padding: 10px; margin-bottom: 12px;
+    }
+    .history-card {
+      background: white; border-radius: 12px; padding: 12px; margin-bottom: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-left: 4px solid #0284c7;
+    }
+    .history-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+    .history-date { font-size: 14px; font-weight: 800; color: #0f172a; }
+    .history-place { font-size: 12px; color: #0284c7; font-weight: 600; }
+    .history-summary-stats {
+      display: flex; gap: 6px; flex-wrap: wrap; font-size: 11.5px; font-weight: bold;
+      background: #f8fafc; padding: 8px; border-radius: 6px; margin-bottom: 8px;
+    }
+    .history-names {
+      font-size: 12px; color: #334155; line-height: 1.5; margin-bottom: 8px;
+      background: #fff; border: 1px solid #e2e8f0; padding: 8px; border-radius: 6px;
+    }
+    .history-btn-del {
+      background: #fee2e2; color: #dc2626; border: none; padding: 6px 10px;
+      border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer;
+    }
+  
+    /* 📊 மொத்த கணக்கு (வியாபாரின் கணக்கு) STYLES */
+    .trader-card {
+      background: #ffffff;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(0, 50, 150, 0.10);
+      border: 1.5px solid #dce3ed;
+      margin-bottom: 15px;
+    }
+    .trader-header {
+      background: linear-gradient(135deg, #1765cf, #1e40af);
+      color: #ffffff;
+      text-align: center;
+      padding: 22px 14px 18px;
+    }
+    .trader-header h2 {
+      font-size: 19px;
+      font-weight: 700;
+      line-height: 1.35;
+      margin-bottom: 8px;
+    }
+    .trader-badge {
+      display: inline-block;
+      background-color: #3b82e6;
+      color: #ffffff;
+      padding: 4px 18px;
+      border-radius: 16px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .trader-body {
+      padding: 16px 14px 20px;
+      background-color: #ffffff;
+    }
+    .trader-meta-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .trader-meta-col {
+      flex: 1;
+    }
+    .trader-meta-col label {
+      display: block;
+      font-size: 12px;
+      color: #64748b;
+      margin-bottom: 5px;
+      font-weight: 700;
+    }
+    .trader-input-pill {
+      width: 100%;
+      height: 40px;
+      padding: 8px 12px;
+      font-size: 14px;
+      font-weight: 700;
+      color: #1e293b;
+      background: #ffffff;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 8px;
+      outline: none;
+    }
+    .trader-input-pill:focus {
+      border-color: #1765cf;
+    }
+    .trader-title-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #f1f5f9;
+      border-radius: 8px;
+      padding: 9px 12px;
+      margin-bottom: 10px;
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #475569;
+    }
+    .trader-table-rows {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .trader-row-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 2px 0;
+    }
+    .trader-row-item span {
+      font-size: 14px;
+      font-weight: 700;
+      color: #334155;
+    }
+    .trader-val-input {
+      width: 125px;
+      height: 38px;
+      padding: 6px 10px;
+      text-align: right;
+      font-size: 15px;
+      font-weight: 800;
+      color: #0f172a;
+      background: #ffffff;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 8px;
+      outline: none;
+    }
+    .trader-val-input:focus {
+      border-color: #1765cf;
+    }
+    .trader-advance-bar {
+      background-color: #fff1f2;
+      border-radius: 8px;
+      padding: 6px 8px;
+      margin: 2px -6px;
+    }
+    .trader-advance-bar span {
+      color: #dc2626;
+      font-weight: 700;
+    }
+    .trader-advance-bar .trader-val-input {
+      border-color: #fecdd3;
+      color: #b91c1c;
+    }
+    .trader-total-box {
+      margin-top: 16px;
+      background-color: #f0fdf4;
+      border: 2px solid #22c55e;
+      border-radius: 10px;
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .trader-total-text {
+      font-size: 15px;
+      font-weight: 800;
+      color: #0f766e;
+    }
+    .trader-total-number {
+      font-size: 20px;
+      font-weight: 800;
+      color: #047857;
+    }
+    .trader-btn-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 14px;
+    }
+    .trader-action-btn {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    }
+    .trader-whatsapp-btn {
+      background-color: #25d366;
+      color: #ffffff;
+    }
+    .trader-sub-buttons {
+      display: flex;
+      gap: 8px;
+    }
+    .trader-print-btn {
+      background-color: #1765cf;
+      color: #ffffff;
+      flex: 1;
+    }
+    .trader-reset-btn {
+      background-color: #e2e8f0;
+      color: #475569;
+      flex: 1;
+    }
+</style>
+
+</head>
+<body>
+
+  <header>
+    <h1>🥥 முக்கண் தேங்காய் உரிக்கும் சங்கம்</h1>
+    <p>நோட் ஸ்கேனர், காய், அட்வான்ஸ் & பிடிமானம் கழிவு சம்பளக் கணக்கு</p>
+  </header>
+
+  <!-- 📲 பல போன்கள் கணக்கு இணைப்பு & பகிர்வு (Multi-Phone Direct Sync & Merge) -->
+  <div style="background: #ffffff; border: 2px solid #2563eb; border-radius: 14px; padding: 12px; margin-bottom: 14px; box-shadow: 0 3px 10px rgba(37, 99, 235, 0.12);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+      <div style="display: flex; align-items: center; gap: 6px;">
+        <span style="font-size: 16px;">📲</span>
+        <span style="font-size: 13.5px; font-weight: 800; color: #1e3a8a;">பல போன்கள் கணக்கு இணைப்பு (Sync & Merge)</span>
+      </div>
+      <button type="button" onclick="toggleSyncHelpModal()" style="background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer;">❓ எப்படி?</button>
+    </div>
+
+    <!-- METHOD 1: Instant WhatsApp / Code Sync (100% Reliable across all phones) -->
+    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px 10px; margin-bottom: 8px;">
+      <div style="font-size: 11.5px; font-weight: 700; color: #334155; margin-bottom: 6px;">
+        ⚡ <b>முறை 1:</b> வாட்ஸ்அப் / குறியீடு வழி இணைத்தல் (எப்போதும் வேலை செய்யும்):
+      </div>
+      <div style="display: flex; gap: 6px;">
+        <button type="button" onclick="shareSyncCodeWhatsApp()" style="flex: 1.2; background: #25D366; color: white; border: none; padding: 9px 6px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px;">
+          <span>📲</span> WhatsApp-ல் அனுப்பு
+        </button>
+        <button type="button" onclick="copySyncCodeToClipboard()" style="flex: 1; background: #e0f2fe; color: #0369a1; border: 1.5px solid #7dd3fc; padding: 9px 6px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer;">
+          📋 Code எடு
+        </button>
+        <button type="button" onclick="pasteAndMergeSyncCode()" style="flex: 1.1; background: #15803d; color: white; border: none; padding: 9px 6px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer;">
+          📥 ஒட்டி இணை
+        </button>
+      </div>
+    </div>
+
+    <!-- METHOD 2: 100% Reliable Cloud Room Sync -->
+    <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; padding: 8px 10px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+        <span style="font-size: 11.5px; font-weight: 700; color: #1e40af;">☁️ <b>முறை 2:</b> இணைய அறை எண் வழி (Cloud Room):</span>
+        <span id="cloudSyncStatus" style="font-size: 10.5px; font-weight: bold; color: #64748b;">நிலை: தயார்</span>
+      </div>
+      <div style="display: flex; gap: 6px; align-items: center;">
+        <input type="text" id="sangamRoomInput" placeholder="அறை எண் (எ.கா: 123 அல்லது MUKKAN-1)" style="flex: 1.2; padding: 8px 10px; font-size: 12.5px; font-weight: 700; border: 1.5px solid #cbd5e1; border-radius: 8px; outline: none; text-transform: uppercase;">
+        <button type="button" onclick="uploadToCloudSync()" style="flex: 1; background: #2563eb; color: white; border: none; padding: 8px 8px; border-radius: 8px; font-size: 11.5px; font-weight: bold; cursor: pointer; white-space: nowrap;">
+          ☁️ பதிவேற்று
+        </button>
+        <button type="button" onclick="downloadFromCloudSync()" style="flex: 1; background: #0284c7; color: white; border: none; padding: 8px 8px; border-radius: 8px; font-size: 11.5px; font-weight: bold; cursor: pointer; white-space: nowrap;">
+          🔄 எடு & இணை
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sync Help Modal -->
+  <div id="syncHelpModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.65); z-index: 999999; padding: 14px; overflow-y: auto;">
+    <div style="background: white; border-radius: 16px; max-width: 440px; margin: 20px auto; padding: 18px; text-align: left; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px;">
+        <h3 style="font-size: 16px; color: #1e3a8a; margin: 0;">💡 பல போன்களை இணைப்பது எப்படி?</h3>
+        <button type="button" onclick="toggleSyncHelpModal()" style="background: #fee2e2; color: #dc2626; border: none; font-size: 14px; font-weight: bold; width: 28px; height: 28px; border-radius: 50%; cursor: pointer;">✕</button>
+      </div>
+      <div style="font-size: 12px; color: #334155; line-height: 1.6;">
+        <b>எளிய முறை 1 (வாட்ஸ்அப் வழி):</b><br>
+        1. போன் 1-ல் கணக்குகளைச் சேர்த்துவிட்டு <b>"WhatsApp-ல் அனுப்பு"</b> தொட்டு போன் 2-க்கு அனுப்பவும்.<br>
+        2. போன் 2-ல் அந்த செய்தியை Copy செய்து, இந்த செயலியில் <b>"📥 ஒட்டி இணை"</b> கொடுத்தால் இரண்டு போன் கணக்குகளும் ஒன்றாகக் கூடிவிடும்!<br><br>
+        <b>முறை 2 (கிளவுட் அறை எண்):</b><br>
+        1. இரண்டு போன்களிலும் ஒரே அறை எண் (எ.கா: <b>123</b>) உள்ளிடவும்.<br>
+        2. போன் 1-ல் <b>"☁️ பதிவேற்று"</b> கொடுத்த பிறகு, போன் 2-ல் <b>"🔄 எடு & இணை"</b> கொடுத்தால் உடனே மொத்தக் கணக்குகளும் இங்கு வந்துவிடும்!
+      </div>
+      <button type="button" onclick="toggleSyncHelpModal()" style="width: 100%; margin-top: 15px; background: #2563eb; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; font-size: 13px; cursor: pointer;">
+        புரிந்தது (சரி)
+      </button>
+    </div>
+  </div>
+
+  <!-- Navigation Tabs (3 Tabs) -->
+  <div class="tab-nav">
+    <button class="tab-btn active" id="tabCurrentBtn" onclick="switchTab('current')">📝 இன்றைய கணக்கு</button>
+    <button class="tab-btn" id="tabHistoryBtn" onclick="switchTab('history')">📂 சேமித்தவை (<span id="savedBadge">0</span>)</button>
+    <button class="tab-btn" id="tabTraderBtn" onclick="switchTab('trader')">📊 மொத்த கணக்கு</button>
+  </div>
+
+  <!-- TAB 1: CURRENT ACTIVE ENTRY -->
+  <div id="currentTabView">
+    <!-- Camera & Gallery AI Scanner Box -->
+    <div class="scanner-box">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+        <h3 style="margin: 0; font-size: 15px; color: #15803d;">⚡ AI நோட் ஸ்கேனர்</h3>
+        <button type="button" onclick="toggleKeyDrawer()" style="background: #fef3c7; color: #b45309; border: 1px solid #fde047; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer;">🔑 AI Key உள்ளிடு</button>
+      </div>
+      <p style="font-size: 11px; color: #64748b; margin-bottom: 10px;">நோட்டுப் புகைப்படத்தை கேலரி அல்லது கேமரா மூலம் அனுப்பினால் தானாகவே பெயர், காய், அட்வான்ஸ் & பிடிமானத்தைக் கணக்கிடும்.</p>
+      
+      <!-- Direct On-Screen API Key Drawer -->
+      <div id="keyDrawerBox" class="key-drawer">
+        <label>🔑 Google Gemini API Key-ஐ இங்கே Paste செய்யவும்:</label>
+        <div class="input-row">
+          <input type="text" id="inlineApiKey" placeholder="AIzaSy... போன்ற கீயை உள்ளிடவும்">
+          <button type="button" onclick="saveInlineApiKey()">சேமி</button>
+        </div>
+        <div id="keyStatusNote" style="font-size: 10px; color: #15803d; font-weight: bold; margin-top: 4px;"></div>
+      </div>
+
+                              <!-- Upload Buttons (Direct Child Input: 100% Android Chrome Guaranteed) -->
+      <div class="camera-btns" style="display: flex; gap: 8px; justify-content: center; margin-bottom: 10px;">
+        <label class="btn-gallery" style="flex: 1.1; padding: 12px 6px; font-size: 13.5px; font-weight: bold; cursor: pointer; text-align: center; justify-content: center; user-select: none; display: inline-flex; align-items: center; border-radius: 8px; background: #15803d; color: white;">
+          🖼️ சம்பள நோட்
+          <input type="file" accept="image/*" style="display: none;" onchange="if(this.files&&this.files[0]){processImage(this.files[0], 'standard');}">
+        </label>
+        <label class="btn-cam" style="flex: 1.3; padding: 12px 6px; font-size: 13.5px; font-weight: bold; cursor: pointer; text-align: center; justify-content: center; user-select: none; display: inline-flex; align-items: center; border-radius: 8px; background: #2563eb; color: white;">
+          🖼️ Gallery (நோட் படம்)
+          <input type="file" accept="image/*" style="display: none;" onchange="if(this.files&&this.files[0]){processImage(this.files[0], 'advance_margin');}">
+        </label>
+      </div><img id="previewImg" class="preview-img">
+      <div id="ocrStatus">⏳ எழுத்துக்களை ஸ்கேன் செய்கிறது... காத்திருக்கவும்.</div>
+
+      <!-- AI Detection Result Box -->
+      <div id="ocrResultBox">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <div style="font-size: 12px; font-weight: bold; color: #15803d;">✅ கண்டறிந்த கணக்குகள் (காய், அட்வான்ஸ், பிடிமானம்):</div>
+          <button type="button" onclick="copyOcrDetectedText()" style="background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer;">📋 Copy</button>
+        </div>
+        <div id="ocrDetectedItems"></div>
+        <button class="btn-apply-ocr" onclick="applyDetectedEntries()">➕ இக்கணக்குகளை பட்டியலில் சேர்</button>
+      </div>
+    </div>
+
+    <!-- Manual Entry Form -->
+    <div class="form-card" id="formCard">
+      <div class="form-title" id="formTitleText">✍️ தொழிலாளர் கணக்கு சேர்க்க:</div>
+      
+      <!-- 🎙️ குரல் வழி கணக்கு பதிவு பட்டன் -->
+      <div style="background: linear-gradient(135deg, #f0fdf4, #dcfce7); border: 2px solid #22c55e; border-radius: 14px; padding: 12px; margin-bottom: 14px; box-shadow: 0 3px 10px rgba(22, 163, 74, 0.15);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <span style="font-size: 16px;">🎙️</span>
+            <span style="font-size: 13px; font-weight: 800; color: #166534;">குரல் வழி பதிவு (Tamil Voice Input)</span>
+          </div>
+          <span style="font-size: 11px; font-weight: bold; color: #15803d; background: #ffffff; padding: 2px 8px; border-radius: 6px; border: 1px solid #86efac;">தயார்</span>
+        </div>
+        
+        <button type="button" onclick="openVoiceModal()" style="width: 100%; background: #15803d; color: white; border: none; padding: 12px 10px; border-radius: 10px; font-size: 14px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 10px rgba(21, 128, 61, 0.25);">
+          <span style="font-size: 20px;">🎙️</span>
+          <span>தொட்டுப் பேசுங்கள்</span>
+        </button>
+      </div>
+
+      <div class="rate-card">
+        <div class="rate-title">💰 ஒரு காய் கூலி / சம்பளம்:</div>
+        <div class="rate-options">
+          <div class="rate-chip active" id="chip_1" onclick="selectRate(1.0)">₹1.00</div>
+          <div class="rate-chip" id="chip_1_1" onclick="selectRate(1.1)">₹1.10</div>
+          <div class="rate-chip" id="chip_custom" onclick="selectCustomRate()">
+            வேறு: ₹<input type="number" step="0.05" id="customRateVal" class="custom-rate-input" value="1.0" oninput="selectCustomRate()">
+          </div>
+        </div>
+      </div>
+
+      <div class="two-col-row">
+        <div class="form-group">
+          <label>உரித்த தேதி</label>
+          <input type="date" id="entryDate">
+        </div>
+        <div class="form-group">
+          <label>உரித்த இடம்</label>
+          <input type="text" id="placeName" placeholder="எ.கா: தோட்டம்" autocomplete="off" oninput="showPlaceSuggestions()">
+          <div class="suggestions-box" id="placeSuggestionsBox"></div>
+        </div>
+      </div>
+
+      <!-- Worker Name with Auto-Suggest -->
+      <div class="form-group">
+        <label>தொழிலாளி பெயர்</label>
+        <input type="text" id="workerName" placeholder="தொழிலாளி பெயர் உள்ளிடவும்..." autocomplete="off" oninput="showNameSuggestions(false)" onfocus="showNameSuggestions(true)" onclick="showNameSuggestions(true)">
+        <div class="suggestions-box" id="nameSuggestionsBox"></div>
+      </div>
+
+      <!-- Coconut Count, Advance, and Pidimaanam inputs -->
+      <div class="two-col-row" style="gap: 6px;">
+        <div class="form-group" style="flex: 1.2;">
+          <label>உரித்த காய் (+ போடலாம்)</label>
+          <input type="text" id="coconutCount" placeholder="எ.கா: 580">
+        </div>
+        <div class="form-group" style="flex: 1;">
+          <label>அட்வான்ஸ் (₹)</label>
+          <input type="number" id="advanceAmount" placeholder="0" min="0">
+        </div>
+        <div class="form-group" style="flex: 1;">
+          <label>பிடிமானம் (₹)</label>
+          <input type="number" id="pidimaanamAmount" placeholder="0" min="0">
+        </div>
+      </div>
+
+      <div class="btn-group">
+        <button class="btn-add" id="btnSubmitForm" onclick="handleSubmitForm()">➕ தொழிலாளரைச் சேர்</button>
+        <button class="btn-cancel-edit" id="btnCancelEdit" onclick="cancelEditing()">ரத்து</button>
+      </div>
+    </div>
+
+    <!-- Active List Header -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+      <div style="font-weight: bold; font-size: 13px; color: #334155;">இன்றைய கணக்கு பட்டியல்:</div>
+      <div style="display: flex; gap: 6px;">
+        <button type="button" onclick="copyCurrentListText()" style="background: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer;">📋 Copy</button>
+        <button type="button" onclick="clearCurrentEntries()" style="background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer;">🗑️ பட்டியல் அழி</button>
+      </div>
+    </div>
+    
+    <div class="entry-list" id="currentEntriesList"></div>
+
+    <!-- Total Summary Card with Advance, Pidimaanam & Net Salary -->
+    <div class="total-card">
+      <div class="total-grid">
+        <div class="total-col">
+          <div class="t-title">மொத்தக் காய்</div>
+          <div class="t-val" id="grandTotalCoconuts">0</div>
+        </div>
+        <div class="total-col">
+          <div class="t-title">மொத்த கூலி</div>
+          <div class="t-val" id="grandTotalGrossWage">₹0</div>
+        </div>
+        <div class="total-col advance">
+          <div class="t-title">அட்வான்ஸ்</div>
+          <div class="t-val" id="grandTotalAdvance">₹0</div>
+        </div>
+        <div class="total-col pidimaanam">
+          <div class="t-title" style="color: #b45309;">பிடிமானம்</div>
+          <div class="t-val" id="grandTotalPidimaanam" style="color: #b45309;">₹0</div>
+        </div>
+      </div>
+      <div style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed #86efac; text-align: center;">
+        <span style="font-size: 12px; font-weight: bold; color: #475569;">நிகரமாக வழங்க வேண்டிய சம்பளம்:</span>
+        <span style="font-size: 20px; font-weight: 800; color: #0284c7; margin-left: 6px;" id="grandTotalNetWage">₹0</span>
+      </div>
+    </div>
+
+    <!-- SAVE FULL DAY BUTTON -->
+    <button class="btn-save-batch" onclick="saveFullDayBatch()">
+      💾 கணக்கை முடித்து சேமி (Save Full Day)
+    </button>
+
+    <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+      <button onclick="shareWhatsAppPDF(currentEntries)" style="flex: 1; background: #25D366; color: white; border: none; padding: 12px; border-radius: 10px; font-size: 13px; font-weight: bold; cursor: pointer;">📄 WhatsApp-ல் PDF</button>
+      <button onclick="generatePDF(currentEntries)" style="flex: 1; background: #0284c7; color: white; border: none; padding: 12px; border-radius: 10px; font-size: 13px; font-weight: bold; cursor: pointer;">📥 PDF பிரிண்ட் / சேமி</button>
+    </div>
+    <button class="btn-whatsapp" onclick="shareWhatsApp()">💬 மெசேஜாக வாட்ஸ்அப்பில் அனுப்பு</button>
+  </div>
+
+  <!-- BACKUP & RESTORE SECTION -->
+  <div style="background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 12px; margin-top: 15px; margin-bottom: 20px;">
+    <div style="font-size: 13px; font-weight: bold; color: #1e293b; margin-bottom: 4px;">🛡️ கணக்குகளை பாதுகாப்பாக வைக்க (Backup & Restore):</div>
+    <p style="font-size: 11px; color: #64748b; margin-bottom: 10px;">இந்த Backup கோப்பை எடுத்து வைத்தால், எப்போது வேண்டுமானாலும் பழைய கணக்குகளை அப்படியே திரும்பப் பெறலாம்.</p>
+    
+    <div style="display: flex; gap: 6px;">
+      <button onclick="downloadBackupFile()" style="flex: 1; background: #047857; color: white; border: none; padding: 10px 4px; border-radius: 8px; font-size: 11.5px; font-weight: bold; cursor: pointer;">
+        📤 Backup எடு
+      </button>
+      <button onclick="document.getElementById('restoreFileInput').click()" style="flex: 1; background: #475569; color: white; border: none; padding: 10px 4px; border-radius: 8px; font-size: 11.5px; font-weight: bold; cursor: pointer;">
+        📥 Backup ஏற்று
+      </button>
+      <button onclick="document.getElementById('mergeFileInput').click()" style="flex: 1.2; background: #2563eb; color: white; border: none; padding: 10px 4px; border-radius: 8px; font-size: 11.5px; font-weight: bold; cursor: pointer;">
+        ➕ கோப்பை இணை (Merge)
+      </button>
+    </div>
+    <input type="file" id="restoreFileInput" accept=".json" style="display: none;" onchange="restoreBackupFile(event)">
+    <input type="file" id="mergeFileInput" accept=".json" style="display: none;" onchange="mergeBackupFile(event)">
+    
+    <div style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed #cbd5e1; text-align: center;">
+      <button type="button" onclick="resetAllAppData()" style="width: 100%; background: #ef4444; color: white; border: none; padding: 9px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer;">
+        ⚠️ அனைத்து பெயர்கள் & கணக்குகளையும் முழுமையாக அழி (Clear All)
+      </button>
+    </div>
+  </div>
+
+  <!-- TAB 2: SAVED HISTORY & SEARCH -->
+  <div id="historyTabView" style="display: none;">
+    <div class="search-card">
+      <div style="font-size: 12px; font-weight: bold; color: #0369a1; margin-bottom: 6px;">🔍 சேமித்த கணக்குகளைத் தேடு:</div>
+      <div style="display: flex; gap: 6px;">
+        <input type="date" id="searchDate" onchange="renderHistory()" style="flex: 1; padding: 8px;">
+        <input type="text" id="searchKeyword" placeholder="இடம் / தொழிலாளி பெயர்..." oninput="renderHistory()" style="flex: 1; padding: 8px;">
+      </div>
+    </div>
+
+    <div style="font-weight: bold; margin-bottom: 8px; font-size: 13px; color: #334155;" id="historySummaryCount">சேமிக்கப்பட்ட நாட்கள்:</div>
+    <div id="historyListContainer"></div>
+  </div>
+
+  <!-- TAB 3: மொத்த கணக்கு (வியாபாரின் கணக்கு) -->
+  <div id="traderTabView" style="display: none;">
+    <div class="trader-card" id="traderBillCard">
+      <div class="trader-header">
+        <h2>முக்கண் தேங்காய்<br>உரிப்பு சங்கம்</h2>
+        <div class="trader-badge">வியாபாரின் கணக்கு</div>
+      </div>
+
+      <div class="trader-body">
+        <div class="trader-meta-row">
+          <div class="trader-meta-col">
+            <label for="traderName">வியாபாரி பெயர்</label>
+            <input type="text" id="traderName" class="trader-input-pill" value="சுரேஷ்" placeholder="வியாபாரி பெயர்">
+          </div>
+          <div class="trader-meta-col">
+            <label for="traderBillDate">தேதி</label>
+            <input type="date" id="traderBillDate" class="trader-input-pill">
+          </div>
+        </div>
+
+        <div style="margin-bottom: 12px; position: relative;">
+          <label style="display: block; font-size: 12px; color: #64748b; margin-bottom: 5px; font-weight: 700;">📍 உரித்த இடம் (தோட்டம்)</label>
+          <input type="text" id="traderPlace" class="trader-input-pill" placeholder="எ.கா: ராமசாமி தோட்டம்" autocomplete="off" oninput="showTraderPlaceSuggestions()">
+          <div class="suggestions-box" id="traderPlaceSuggestionsBox"></div>
+        </div>
+
+        <div style="margin-bottom: 14px;">
+          <button type="button" onclick="loadTodayToTraderBill()" style="width: 100%; background: #eff6ff; color: #1e40af; border: 1.5px dashed #3b82f6; padding: 10px; border-radius: 10px; font-size: 13px; font-weight: bold; cursor: pointer;">
+            🔄 இன்றைய மொத்தக் கூலியை இங்கு ஏற்று (Auto-Fill)
+          </button>
+        </div>
+
+        <div class="trader-title-bar">
+          <span>விவரம்</span>
+          <span>ரூபாய் (₹)</span>
+        </div>
+
+        <div class="trader-table-rows">
+          <div class="trader-row-item">
+            <span>மொத்தம் காய்</span>
+            <input type="number" id="totalKai" class="trader-val-input" value="15000" placeholder="காய் எண்ணிக்கை" oninput="onTraderKaiCountChange()">
+          </div>
+
+          <div class="trader-row-item">
+            <span>உரிகூலி சதவீதம்</span>
+            <input type="number" step="0.05" id="traderRateInput" class="trader-val-input" value="1.0" placeholder="தானாக வரும்" oninput="onTraderRateInputChange()">
+          </div>
+
+          <div class="trader-row-item">
+            <span style="font-weight: 700; color: #15803d;">மொத்த உரி கூலி</span>
+            <input type="number" id="uriCooli" class="trader-val-input" value="15000" style="color: #15803d;" oninput="calculateTraderBill()">
+          </div>
+
+          <div class="trader-row-item">
+            <span>டீ காசு</span>
+            <input type="number" id="teaCost" class="trader-val-input" value="350" oninput="calculateTraderBill()">
+          </div>
+
+          <div class="trader-row-item">
+            <span>தலைவர் படி</span>
+            <input type="number" id="leaderBadi" class="trader-val-input" value="350" oninput="calculateTraderBill()">
+          </div>
+
+          <div class="trader-row-item">
+            <span>ஆள் படி</span>
+            <input type="number" id="personBadi" class="trader-val-input" value="0" oninput="calculateTraderBill()">
+          </div>
+
+          <div class="trader-row-item trader-advance-bar">
+            <span>அட்வான்ஸ் (-)</span>
+            <input type="number" id="traderAdvance" class="trader-val-input" value="1000" oninput="calculateTraderBill()">
+          </div>
+        </div>
+
+        <div class="trader-total-box">
+          <div class="trader-total-text">கடைசி மொத்தம்</div>
+          <div class="trader-total-number" id="traderFinalTotal">₹ 14,700</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BUTTONS PANEL -->
+    <div class="trader-btn-actions">
+      <button class="trader-action-btn trader-whatsapp-btn" onclick="shareTraderWhatsApp()">
+        <span>📲</span> WhatsApp-ல் அனுப்பவும்
+      </button>
+
+      <div class="trader-sub-buttons">
+        <button class="trader-action-btn trader-print-btn" onclick="printTraderBill()">
+          <span>🖨️</span> அச்சிடுக (Print / PDF)
+        </button>
+        <button class="trader-action-btn trader-reset-btn" onclick="resetTraderForm()">
+          மீட்டமைக்க
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentEntries = JSON.parse(localStorage.getItem('mukkan_active_entries_v18') || '[]');
+    let savedBatches = JSON.parse(localStorage.getItem('mukkan_batches_v18') || '[]');
+    let historicalNames = JSON.parse(localStorage.getItem('mukkan_names_v18') || '[]');
+    let historicalPlaces = JSON.parse(localStorage.getItem('mukkan_places_v18') || '[]');
+    let userApiKey = localStorage.getItem('mukkan_gemini_api_key') || '';
+
+    // Backward compatibility data check from previous versions
+    if (savedBatches.length > 0) {
+      savedBatches = savedBatches.map(b => ({
+        ...b,
+        totalGrossWage: b.totalGrossWage || b.totalWage || 0,
+        totalAdvance: b.totalAdvance || 0,
+        totalPidimaanam: b.totalPidimaanam || 0,
+        totalNetWage: b.totalNetWage !== undefined ? b.totalNetWage : ((b.totalGrossWage || b.totalWage || 0) - (b.totalAdvance || 0) - (b.totalPidimaanam || 0)),
+        items: (b.items || []).map(it => ({
+          ...it,
+          grossWage: it.grossWage || it.wage || 0,
+          advance: it.advance || 0,
+          pidimaanam: it.pidimaanam || 0,
+          netWage: it.netWage !== undefined ? it.netWage : ((it.grossWage || it.wage || 0) - (it.advance || 0) - (it.pidimaanam || 0))
+        }))
+      }));
+    }
+    if (currentEntries.length > 0) {
+      currentEntries = currentEntries.map(it => ({
+        ...it,
+        grossWage: it.grossWage || it.wage || 0,
+        advance: it.advance || 0,
+        pidimaanam: it.pidimaanam || 0,
+        netWage: it.netWage !== undefined ? it.netWage : ((it.grossWage || it.wage || 0) - (it.advance || 0) - (it.pidimaanam || 0))
+      }));
+    }
+
+    let currentRate = 1.0;
+    let tempDetectedItems = [];
+    let editingId = null;
+
+    document.getElementById('entryDate').value = new Date().toISOString().split('T')[0];
+
+    // Initialize UI Key input
+    if (userApiKey) {
+      document.getElementById('inlineApiKey').value = userApiKey;
+      document.getElementById('keyStatusNote').innerText = '✅ API Key தற்போது சேமிக்கப்பட்டுள்ளது.';
+    }
+
+    function toggleKeyDrawer() {
+      const box = document.getElementById('keyDrawerBox');
+      box.style.display = (box.style.display === 'block') ? 'none' : 'block';
+    }
+
+    function saveInlineApiKey() {
+      const input = document.getElementById('inlineApiKey').value.trim();
+      userApiKey = input;
+      localStorage.setItem('mukkan_gemini_api_key', userApiKey);
+      if (userApiKey) {
+        document.getElementById('keyStatusNote').innerText = '✅ API Key வெற்றிகரமாக சேமிக்கப்பட்டது!';
+        alert('✅ API Key வெற்றிகரமாக சேமிக்கப்பட்டது!');
+      } else {
+        document.getElementById('keyStatusNote').innerText = '⚠️ API Key நீக்கப்பட்டது.';
+        alert('API Key நீக்கப்பட்டது.');
+      }
+      document.getElementById('keyDrawerBox').style.display = 'none';
+    }
+
+    function switchTab(tab) {
+      document.getElementById('currentTabView').style.display = (tab === 'current') ? 'block' : 'none';
+      document.getElementById('historyTabView').style.display = (tab === 'history') ? 'block' : 'none';
+      document.getElementById('traderTabView').style.display = (tab === 'trader') ? 'block' : 'none';
+
+      document.getElementById('tabCurrentBtn').classList.toggle('active', tab === 'current');
+      document.getElementById('tabHistoryBtn').classList.toggle('active', tab === 'history');
+      document.getElementById('tabTraderBtn').classList.toggle('active', tab === 'trader');
+
+      if (tab === 'history') {
+        renderHistory();
+      } else if (tab === 'trader') {
+        const activeR = (currentEntries.length > 0 && currentEntries[0].rate) ? currentEntries[0].rate : currentRate;
+        setTraderRate(activeR);
+        calculateTraderBill();
+      }
+    }
+
+    function selectRate(val) {
+      currentRate = parseFloat(val);
+      document.getElementById('chip_1').classList.toggle('active', currentRate === 1.0);
+      document.getElementById('chip_1_1').classList.toggle('active', currentRate === 1.1);
+      document.getElementById('chip_custom').classList.remove('active');
+    }
+
+    function selectCustomRate() {
+      currentRate = parseFloat(document.getElementById('customRateVal').value) || 1.0;
+      document.getElementById('chip_1').classList.remove('active');
+      document.getElementById('chip_1_1').classList.remove('active');
+      document.getElementById('chip_custom').classList.add('active');
+    }
+
+    // 👤 தொழிலாளர் பெயர் பரிந்துரை (Auto suggestions)
+    function showNameSuggestions(showAllOnFocus = false) {
+      const input = document.getElementById('workerName');
+      const box = document.getElementById('nameSuggestionsBox');
+      const val = input.value.trim().toLowerCase();
+
+      const allNames = Array.from(new Set([...historicalNames, ...currentEntries.map(e => e.name), ...tempDetectedItems.map(t => t.name)])).filter(Boolean);
+
+      let filtered = allNames;
+      if (val) {
+        filtered = allNames.filter(n => n.toLowerCase().includes(val));
+      } else if (!showAllOnFocus) {
+        box.style.display = 'none';
+        return;
+      }
+
+      if (filtered.length === 0) { box.style.display = 'none'; return; }
+
+      box.innerHTML = filtered.slice(0, 15).map(name => `
+        <div class="suggestion-item" onmousedown="selectName('${name.replace(/'/g, "'")}')">
+          <span>👤 <b>${name}</b></span>
+          <span style="font-size: 11px; color: #16a34a; font-weight: bold;">தேர்ந்தெடு ➜</span>
+        </div>
+      `).join('');
+      box.style.display = 'block';
+    }
+
+    function selectName(name) {
+      document.getElementById('workerName').value = name;
+      document.getElementById('nameSuggestionsBox').style.display = 'none';
+      document.getElementById('coconutCount').focus();
+    }
+
+    // 📍 இடம் பரிந்துரை (Place suggestions)
+    function showPlaceSuggestions() {
+      const input = document.getElementById('placeName');
+      const box = document.getElementById('placeSuggestionsBox');
+      const val = input.value.trim().toLowerCase();
+
+      if (!val) { box.style.display = 'none'; return; }
+      const allPlaces = Array.from(new Set([...historicalPlaces, ...currentEntries.map(e => e.place)]));
+      const filtered = allPlaces.filter(p => p.toLowerCase().includes(val));
+
+      if (filtered.length === 0) { box.style.display = 'none'; return; }
+      box.innerHTML = filtered.map(p => `
+        <div class="suggestion-item" onmousedown="selectPlace('${p}')">
+          <span>📍 ${p}</span>
+          <span style="font-size: 11px; color: #16a34a;">தேர்ந்தெடு ➜</span>
+        </div>
+      `).join('');
+      box.style.display = 'block';
+    }
+
+    function selectPlace(place) {
+      document.getElementById('placeName').value = place;
+      document.getElementById('placeSuggestionsBox').style.display = 'none';
+      document.getElementById('workerName').focus();
+    }
+
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('#workerName') && !e.target.closest('#nameSuggestionsBox')) {
+        document.getElementById('nameSuggestionsBox').style.display = 'none';
+      }
+      if (!e.target.closest('#placeName') && !e.target.closest('#placeSuggestionsBox')) {
+        document.getElementById('placeSuggestionsBox').style.display = 'none';
+      }
+    });
+
+    function compressImage(file) {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.src = URL.createObjectURL(file);
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d', { alpha: false });
+          let w = img.width, h = img.height;
+          
+          const maxH = 1800;
+          const maxW = 1200;
+          if (h > maxH || w > maxW) {
+            const ratio = Math.min(maxW / w, maxH / h);
+            w = Math.round(w * ratio);
+            h = Math.round(h * ratio);
+          }
+          
+          canvas.width = w;
+          canvas.height = h;
+          ctx.drawImage(img, 0, 0, w, h);
+          const base64 = canvas.toDataURL('image/jpeg', 0.88).split(',')[1];
+          resolve({ base64 });
+        };
+        img.onerror = () => {
+          const reader = new FileReader();
+          reader.readAsDataURL(file);
+          reader.onload = () => resolve({ base64: reader.result.split(',')[1] });
+        };
+      });
+    }
+
+    async function processImage(file, mode = 'standard') {
+      if (!file) return;
+      window._lastUploadedFile = file;
+      window._lastScanMode = mode;
+
+      const prev = document.getElementById('previewImg');
+      if (prev) {
+        prev.src = URL.createObjectURL(file);
+        prev.style.display = 'block';
+      }
+
+      const statusEl = document.getElementById('ocrStatus');
+      statusEl.style.display = 'block';
+      statusEl.innerHTML = (mode === 'advance_margin') 
+        ? '⏳ படம் பெறப்பட்டது... இடதுபுற அட்வான்ஸ் & காய் கணக்கை ஸ்கேன் செய்கிறது...' 
+        : '⏳ படம் பெறப்பட்டது... சம்பள நோட் (அட்வான்ஸ் & பிடிமானம்) படிக்கிறது...';
+
+      const cleanKey = (userApiKey || '').trim().replace(/["'\s]/g, '');
+      if (cleanKey) {
+        scanWithGeminiAI(file, mode);
+      } else {
+        document.getElementById('keyDrawerBox').style.display = 'block';
+        statusEl.innerHTML = '⚠️ <b>Google Gemini API Key தேவை:</b> நோட்டில் உள்ள கையெழுத்தைத் துல்லியமாகப் படிக்க மேலே உள்ள மஞ்சள் நிறப் பெட்டியில் API Key-ஐ உள்ளிட்டு "சேமி" கொடுக்கவும்.<br><button type="button" onclick="scanWithLocalOCR(window._lastUploadedFile)" style="margin-top:8px; background:#0284c7; color:white; border:none; padding:8px 12px; border-radius:6px; font-weight:bold; cursor:pointer;">🔍 Key இன்றி உள்ளமைந்த ஸ்கேனரால் படிக்க</button>';
+        window.scrollTo({ top: 120, behavior: 'smooth' });
+      }
+    }
+
+    async function scanWithLocalOCR(file) {
+      const statusEl = document.getElementById('ocrStatus');
+      statusEl.style.display = 'block';
+      statusEl.innerHTML = '🔍 உள்ளமைந்த ஸ்கேனர் வரிகளைப் படிக்கிறது... காத்திருக்கவும்.';
+
+      try {
+        if (typeof Tesseract === 'undefined') {
+          statusEl.innerHTML = '⚠️ OCR எஞ்சின் லோட் ஆகவில்லை. மேலே உள்ள "🔑 AI Key உள்ளிடு" மூலம் Google Gemini Key-ஐ அமைக்கவும்.';
+          return;
+        }
+
+        const result = await Tesseract.recognize(file, 'tam+eng', {
+          logger: m => {
+            if (m.status === 'recognizing text') {
+              statusEl.innerHTML = `🔍 எழுத்துக்களைப் படிக்கிறது... ${Math.round(m.progress * 100)}%`;
+            }
+          }
+        });
+
+        const lines = (result.data.text || '').split('\n');
+        tempDetectedItems = [];
+
+        lines.forEach(line => {
+          let clean = line.trim();
+          if (!clean || clean.length < 2) return;
+          if (/மொத்தம்|total|gross|தேதி|date/i.test(clean)) return;
+
+          clean = clean.replace(/^[0-9]{1,2}[\.\)\-\:\s]+/, '');
+          const numMatches = clean.match(/(\d+(?:\s*\+\s*\d+)*)/g);
+
+          if (numMatches && numMatches.length > 0) {
+            const countStr = numMatches[0];
+            const count = evalSum(countStr);
+            const advStr = numMatches.length > 1 ? numMatches[1] : '0';
+            const advance = parseInt(advStr) || 0;
+            const pidiStr = numMatches.length > 2 ? numMatches[2] : '0';
+            const pidimaanam = parseInt(pidiStr) || 0;
+
+            const lastIdx = clean.indexOf(countStr);
+            let namePart = clean.substring(0, lastIdx > 0 ? lastIdx : clean.length).replace(/[:\-=\(\)\/\|\_\*\&—–\.]/g, ' ').trim();
+
+            if (namePart.length >= 2 && count > 0) {
+              tempDetectedItems.push({ name: namePart, count: count, raw: countStr, advance: advance, pidimaanam: pidimaanam });
+            }
+          }
+        });
+
+        renderOcrResults();
+        if (tempDetectedItems.length > 0) {
+          statusEl.style.display = 'none';
+          document.getElementById('ocrResultBox').style.display = 'block';
+        } else {
+          statusEl.innerHTML = '⚠️ எழுத்துக்கள் தெளிவாகப் பதியவில்லை. கையெழுத்தை 100% துல்லியமாகப் படிக்க மேலே உள்ள "🔑 AI Key உள்ளிடு" மூலம் இலவச Google Gemini Key-ஐ அமைக்கவும்.';
+        }
+      } catch (err) {
+        statusEl.innerHTML = '⚠️ ஸ்கேன் செய்வதில் பிழை: ' + err.message;
+      }
+    }
+
+    async function scanWithGeminiAI(file, mode = 'standard') {
+      const statusEl = document.getElementById('ocrStatus');
+      statusEl.style.display = 'block';
+      statusEl.innerHTML = '⚡ AI சேவையகத்துடன் இணைகிறது... காத்திருக்கவும்.';
+
+      const cleanKey = (userApiKey || '').trim().replace(/["'\s]/g, '');
+      if (!cleanKey) {
+        document.getElementById('keyDrawerBox').style.display = 'block';
+        statusEl.innerHTML = '⚠️ <b>API Key இல்லை:</b> மேலே உள்ள மஞ்சள் நிறப் பெட்டியில் Google Gemini API Key-ஐ Paste செய்து "சேமி" கொடுக்கவும்.';
+        window.scrollTo({ top: 80, behavior: 'smooth' });
+        return;
+      }
+
+      try {
+        const { base64 } = await compressImage(file);
+
+        let promptText = '';
+
+        if (mode === 'advance_margin') {
+          // MODE 2: Gallery (நோட் படம்) - Far-left margin number is ADVANCE, followed by serial number, name, coconut counts
+          promptText = `Act as an expert Tamil Handwriting OCR Accountant specialized in reading coconut peeling wage notebooks (முக்கண் தேங்காய் உரிக்கும் சங்கம்).
+Examine this handwritten page image very carefully from top to bottom.
+
+Notebook Columns & Layout for this page:
+1. FAR-LEFT MARGIN (இடதுபுற ஓரம் / red box margin):
+   Numbers written on the far-left margin (e.g., 35, 35, 35, 235, 35, 35, 25, 25, 35, 35, 25, 18, 50, 100, 200...) represent the ADVANCE (அட்வான்ஸ் / advance amount) for that worker!
+   - You MUST extract any number written in this far-left margin as 'advance' (integer in Rupees).
+   - If a row's far-left margin is blank or has no number (e.g. for தருண்), 'advance' is 0.
+2. SERIAL NUMBER COLUMN (வரிசை எண்):
+   Numbers right before names like 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48... IGNORE these serial numbers completely. Do NOT mix them into names or counts.
+3. WORKER TAMIL NAME (தொழிலாளி பெயர்):
+   Tamil name with initials (e.g., 'I. அருண்', 'K. அருண்', 'கிஷோர்', 'A. மாரீஸ்', 'C. ஈஸ்வரன்', 'மாயன்', 'K. மாரீஸ்', 'பிரகாஷ்', 'தினேஷ்', 'R. விக்கி', 'நவீன்', 'தருண்', 'புகழ்', 'P. வேலு', 'V. முருகன்').
+4. COCONUT COUNT & ADDITIONS (உரித்த காய் கணக்கு):
+   The numbers on the right like '475+525=1000' (total 1000), '1210 - 1210' (total 1210), '975 - 975' (total 975), '975+175=1150' (total 1150), '1030+200=1230' (total 1230), '800+120=920' (total 920), '700 - 700' (total 700), '480+20=500' (total 500), '560+80=640' (total 640), '550+200+150=900' (total 900), '720+120+200=1040' (total 1040), '900+150=1050' (total 1050), '920+60+230=1210' (total 1210), '200 - 200' (total 200).
+   - Extract 'raw': Expression like '475+525' or '1030+200' or '1210'.
+   - Extract 'count': The final total coconut integer (e.g. 1000, 1210, 975, 1150, 1230, 920, 700, 500, 640, 900, 1040, 1050, 1210, 200).
+5. PIDIMAANAM (பிடிமானம்):
+   Set 'pidimaanam' to 0 for this format unless a deduction is explicitly labelled.
+
+Strict Instructions:
+- Every number in the far-left margin (35, 35, 35, 35, 35, 235, 35, 35, 25, 25, 35, 35, 25) MUST be put in 'advance' (in Rupees)!
+- It will be deducted from their coconut wages as Advance.
+
+Strictly return ONLY a valid JSON array of objects without markdown fences:
+[{"name": "I. அருண்", "raw": "475+525", "count": 1000, "advance": 35, "pidimaanam": 0}, {"name": "K. அருண்", "raw": "1210", "count": 1210, "advance": 35, "pidimaanam": 0}, {"name": "மாயன்", "raw": "1030+200", "count": 1230, "advance": 235, "pidimaanam": 0}]`;
+        } else {
+          // MODE 1: சம்பள நோட் - Standard Wage Notebook with columns (Margin = Pidimaanam, Col 1 = Kai, Col 2 = Advance, Col 3 = Salary)
+          promptText = `Act as an expert Tamil Handwriting OCR Accountant specialized in reading coconut peeling wage notebooks (முக்கண் தேங்காய் உரிக்கும் சங்கம்).
+Examine this handwritten page image very carefully from top to bottom.
+
+Notebook Columns & Layout:
+1. FAR-LEFT MARGIN (the column marked to the far-left of names):
+   Numbers written here (e.g., 30, 30, 30...) represent the PIDIMAANAM (பிடிமானம் / deduction) for that worker!
+   - You MUST extract any number written in this far-left margin column as 'pidimaanam' (integer in Rupees).
+   - If that row's left margin is blank or has no number, 'pidimaanam' is 0.
+2. WORKER TAMIL NAME: Clean worker name with initials in Tamil (e.g., 'S. பூமாலை', 'D. பரசுராமன்', 'D. விக்னேஷ்', 'P. அய்யப்பராஜ்', 'M. சக்திவேல்', 'நந்தகுமார்', 'K. பாலமுருகன்', 'S. அய்யப்பன்', 'M. K. கார்த்திக்', 'P. மணி', 'M. முத்துக்குமார்', 'J. P. வேல்', 'M. சஞ்சய்', 'M. C. விஜயன்', 'M. சின்னன்', 'M. நாகராஜ்', 'M. சிவா', 'A. சிவா', 'D. மதன்', 'M. மாயன்', 'D. முருகன்', 'P. முருகமணி', 'T. அருண்', 'S. அருண்', 'C. ஈஸ்வரன்', 'நவீன்', 'S. மாரீஸ்', 'ஜா', 'புகழ்', 'வைரம்', 'தருண்', 'T. விக்கி', 'S. காளி', 'A. ராஜ்குமார்').
+3. FIRST NUMBER COLUMN (முதலில் இருப்பது): COCONUT COUNT (காய்) - (e.g., 570, 580, 580, 580, 570, 580, 550, 620, 630...). Extract as 'count'.
+4. SECOND NUMBER COLUMN (அடுத்து இருப்பது): ADVANCE (அட்வான்ஸ்) - (e.g., 200, 35, 35, 35, 550, 350, 125, 235, 575, 110, 35, 460...). Extract as 'advance' (integer in Rupees). If empty, advance is 0.
+5. THIRD NUMBER COLUMN (கடைசியாக இருப்பது): SALARY (சம்பளம்).
+
+Instructions for Output:
+1. 'name': Exact clean worker name in Tamil with initials.
+2. 'raw': The count as written (e.g. '570' or '580').
+3. 'count': The integer total of coconuts for that worker.
+4. 'advance': The advance amount in Rupees from the second number column as an integer, or 0 if empty.
+5. 'pidimaanam': The deduction amount in Rupees from the far-left margin column (e.g. 30) as an integer, or 0 if empty.
+
+Strictly return ONLY a valid JSON array of objects without markdown fences:
+[{"name": "S. பூமாலை", "raw": "570", "count": 570, "advance": 200, "pidimaanam": 0}, {"name": "நந்தகுமார்", "raw": "580", "count": 580, "advance": 350, "pidimaanam": 30}]`;
+        }
+
+        // 1. பயனரின் API Key-க்கு கூகுள் அனுமதித்துள்ள மாடல்களைக் கண்டறிதல்
+        let validModels = [];
+        try {
+          statusEl.innerHTML = '⚡ கூகுள் AI மாடல்களைத் தேர்வு செய்கிறது...';
+          const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${cleanKey}`);
+          if (listRes.ok) {
+            const listData = await listRes.json();
+            if (listData && listData.models) {
+              validModels = listData.models
+                .filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes('generateContent'))
+                .map(m => m.name.replace(/^models\//, ''));
+            }
+          }
+        } catch (e) {
+          console.warn('ListModels fetch skipped:', e);
+        }
+
+        let priorityModels = [
+          'gemini-1.5-flash',
+          'gemini-2.0-flash',
+          'gemini-1.5-flash-8b',
+          'gemini-2.5-flash',
+          'gemini-1.5-pro'
+        ];
+
+        let modelsToTry = [];
+        if (validModels.length > 0) {
+          const flashModels = validModels.filter(m => m.includes('flash') && !m.includes('image') && !m.includes('audio') && !m.includes('tts'));
+          const otherModels = validModels.filter(m => !m.includes('flash') && !m.includes('embedding') && !m.includes('aqa'));
+          modelsToTry = Array.from(new Set([...flashModels, ...priorityModels, ...otherModels]));
+        } else {
+          modelsToTry = priorityModels;
+        }
+
+        let resp = null;
+        let lastErrorMsg = '';
+
+        for (const modelName of modelsToTry) {
+          try {
+            statusEl.innerHTML = `⚡ Google AI (${modelName}) மூலம் கணக்கிடுகிறது...`;
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${cleanKey}`;
+            const attempt = await fetch(url, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                contents: [{
+                  parts: [
+                    { text: promptText },
+                    { inline_data: { mime_type: 'image/jpeg', data: base64 } }
+                  ]
+                }],
+                generationConfig: {
+                  temperature: 0.1,
+                  response_mime_type: 'application/json'
+                }
+              })
+            });
+
+            if (attempt.ok) {
+              resp = attempt;
+              break;
+            } else {
+              const errData = await attempt.json().catch(() => ({}));
+              lastErrorMsg = (errData.error && errData.error.message) ? errData.error.message : attempt.statusText;
+              
+              if (attempt.status === 400 || attempt.status === 403) {
+                if (lastErrorMsg.includes('API key') || lastErrorMsg.includes('key not valid')) {
+                  document.getElementById('keyDrawerBox').style.display = 'block';
+                  statusEl.innerHTML = `⚠️ <b>API Key பிழை:</b> "${lastErrorMsg}". சரியான Google Gemini API Key-ஐ மேலே உள்ளிட்டு "சேமி" கொடுக்கவும்.`;
+                  return;
+                }
+              }
+            }
+          } catch (e) {
+            lastErrorMsg = e.message;
+          }
+        }
+
+        if (!resp) {
+          statusEl.innerHTML = `⚠️ <b>AI சர்வர் பிழை:</b> ${lastErrorMsg || 'இணைக்க முடியவில்லை'}. <br>இணைய இணைப்பை சரிபார்த்து "🔄 மீண்டும் முயற்சி செய்" கொடுக்கவும்.<br>
+          <button onclick="scanWithGeminiAI(window._lastUploadedFile, window._lastScanMode)" style="margin-top:8px; background:#15803d; color:white; border:none; padding:8px 14px; border-radius:6px; font-weight:bold; cursor:pointer;">🔄 மீண்டும் முயற்சி செய்</button>`;
+          return;
+        }
+
+        const data = await resp.json();
+        if (data && data.candidates && data.candidates[0] && data.candidates[0].content) {
+          let textOut = data.candidates[0].content.parts[0].text;
+          textOut = textOut.replace(/```json/gi, '').replace(/```/g, '').trim();
+          const items = JSON.parse(textOut);
+
+          tempDetectedItems = items.map(it => ({
+            name: String(it.name).replace(/^[0-9]+[\.\s\-]+/, '').trim(),
+            count: parseInt(it.count) || evalSum(it.raw),
+            raw: String(it.raw || it.count),
+            advance: parseInt(it.advance) || 0,
+            pidimaanam: parseInt(it.pidimaanam) || 0
+          })).filter(x => x.name && x.count > 0);
+
+          renderOcrResults();
+          statusEl.style.display = 'none';
+          document.getElementById('ocrResultBox').style.display = 'block';
+          window.scrollTo({ top: 350, behavior: 'smooth' });
+        } else {
+          throw new Error('AI-ல் இருந்து விடை வரவில்லை.');
+        }
+
+      } catch (err) {
+        statusEl.innerHTML = `⚠️ பிழை: ${err.message}<br>
+        <button onclick="scanWithGeminiAI(window._lastUploadedFile, window._lastScanMode)" style="margin-top:8px; background:#15803d; color:white; border:none; padding:8px 14px; border-radius:6px; font-weight:bold; cursor:pointer;">🔄 மீண்டும் முயற்சி செய்</button>`;
+      }
+    }
+
+    function renderOcrResults() {
+      const resultBox = document.getElementById('ocrResultBox');
+      const container = document.getElementById('ocrDetectedItems');
+      const statusEl = document.getElementById('ocrStatus');
+
+      if (tempDetectedItems.length > 0) {
+        statusEl.style.display = 'none';
+        resultBox.style.display = 'block';
+        container.innerHTML = tempDetectedItems.map((item, i) => {
+          const displayVal = item.raw ? item.raw : item.count;
+          const calculatedSum = evalSum(displayVal);
+          return `
+          <div class="ocr-item-row">
+            <span style="font-size: 11px; font-weight: bold; color: #64748b; width: 16px;">${i + 1}.</span>
+            <input type="text" class="edit-name" value="${item.name}" placeholder="தொழிலாளி பெயர்" onchange="tempDetectedItems[${i}].name = this.value">
+            <input type="text" class="edit-count" value="${displayVal}" placeholder="காய்" title="${calculatedSum} காய்" onchange="tempDetectedItems[${i}].raw = this.value; tempDetectedItems[${i}].count = evalSum(this.value); renderOcrResults();">
+            <input type="number" class="edit-adv" value="${item.advance || ''}" placeholder="அட்வான்ஸ் ₹" title="அட்வான்ஸ்" onchange="tempDetectedItems[${i}].advance = Math.max(0, parseInt(this.value) || 0);">
+            <input type="number" class="edit-pidi" value="${item.pidimaanam || ''}" placeholder="பிடிமானம் ₹" title="பிடிமானம்" onchange="tempDetectedItems[${i}].pidimaanam = Math.max(0, parseInt(this.value) || 0);">
+            <button class="btn-row-del" onclick="tempDetectedItems.splice(${i},1); renderOcrResults();">✕</button>
+          </div>
+        `;
+        }).join('');
+      } else {
+        resultBox.style.display = 'none';
+      }
+    }
+
+    function applyDetectedEntries() {
+      const date = document.getElementById('entryDate').value;
+      const place = document.getElementById('placeName').value;
+
+      tempDetectedItems.forEach(item => {
+        if (item.name && item.count > 0) {
+          const cleanName = item.name.trim();
+          if (!historicalNames.includes(cleanName)) {
+            historicalNames.push(cleanName);
+          }
+          const grossWage = Math.round(item.count * currentRate);
+          const advance = item.advance || 0;
+          const pidimaanam = item.pidimaanam || 0;
+          const netWage = grossWage - advance - pidimaanam;
+
+          currentEntries.push({
+            id: Date.now() + Math.random(),
+            date, place,
+            name: cleanName,
+            raw: String(item.raw || item.count),
+            count: item.count,
+            rate: currentRate,
+            grossWage,
+            advance,
+            pidimaanam,
+            netWage
+          });
+        }
+      });
+
+      document.getElementById('ocrResultBox').style.display = 'none';
+      document.getElementById('previewImg').style.display = 'none';
+      tempDetectedItems = [];
+      saveCurrentState();
+      
+      alert('✅ கண்டறிந்த கணக்குகள் அட்வான்ஸ் & பிடிமானம் கழிவுடன் வெற்றிகரமாக பட்டியலில் சேர்க்கப்பட்டன!');
+    }
+
+    function evalSum(expr) {
+      return String(expr).split('+').reduce((sum, n) => sum + (parseInt(n.trim()) || 0), 0);
+    }
+
+    // ✏️ EDIT ENTRY
+    function startEditEntry(id) {
+      const item = currentEntries.find(e => e.id === id);
+      if (!item) return;
+
+      editingId = id;
+      document.getElementById('workerName').value = item.name;
+      document.getElementById('coconutCount').value = item.raw || item.count;
+      document.getElementById('advanceAmount').value = item.advance ? item.advance : '';
+      document.getElementById('pidimaanamAmount').value = item.pidimaanam ? item.pidimaanam : '';
+      document.getElementById('entryDate').value = item.date;
+      document.getElementById('placeName').value = item.place || '';
+      
+      if (item.rate === 1.0 || item.rate === 1.1) {
+        selectRate(item.rate);
+      } else {
+        document.getElementById('customRateVal').value = item.rate;
+        selectCustomRate();
+      }
+
+      document.getElementById('formCard').classList.add('editing-mode');
+      document.getElementById('formTitleText').innerHTML = '✏️ ' + item.name + ' - கணக்கை மாற்றவும்:';
+      const btn = document.getElementById('btnSubmitForm');
+      btn.textContent = '💾 மாற்றத்தை சேமி';
+      btn.classList.add('btn-update');
+      document.getElementById('btnCancelEdit').style.display = 'block';
+
+      document.getElementById('formCard').scrollIntoView({ behavior: 'smooth' });
+      document.getElementById('coconutCount').focus();
+    }
+
+    function cancelEditing() {
+      editingId = null;
+      document.getElementById('workerName').value = '';
+      document.getElementById('coconutCount').value = '';
+      document.getElementById('advanceAmount').value = '';
+      document.getElementById('pidimaanamAmount').value = '';
+      document.getElementById('formCard').classList.remove('editing-mode');
+      document.getElementById('formTitleText').textContent = '✍️ தொழிலாளர் கணக்கு சேர்க்க:';
+      const btn = document.getElementById('btnSubmitForm');
+      btn.textContent = '➕ தொழிலாளரைச் சேர்';
+      btn.classList.remove('btn-update');
+      document.getElementById('btnCancelEdit').style.display = 'none';
+    }
+
+    function handleSubmitForm() {
+      const name = document.getElementById('workerName').value.trim();
+      const raw = document.getElementById('coconutCount').value.trim();
+      const advInput = document.getElementById('advanceAmount').value.trim();
+      const advance = Math.max(0, parseInt(advInput) || 0);
+      const pidiInput = document.getElementById('pidimaanamAmount').value.trim();
+      const pidimaanam = Math.max(0, parseInt(pidiInput) || 0);
+      const date = document.getElementById('entryDate').value;
+      const place = document.getElementById('placeName').value.trim();
+
+      if (!name || !raw) return alert('தொழிலாளி பெயர் மற்றும் காய் எண்ணிக்கை உள்ளிடவும்!');
+      const count = evalSum(raw);
+      if (count <= 0) return alert('சரியான காய் எண்ணிக்கை உள்ளிடவும்!');
+
+      const grossWage = Math.round(count * currentRate);
+      const netWage = grossWage - advance - pidimaanam;
+
+      if (editingId !== null) {
+        const item = currentEntries.find(e => e.id === editingId);
+        if (item) {
+          item.name = name;
+          item.raw = raw;
+          item.count = count;
+          item.date = date;
+          item.place = place;
+          item.rate = currentRate;
+          item.grossWage = grossWage;
+          item.advance = advance;
+          item.pidimaanam = pidimaanam;
+          item.netWage = netWage;
+        }
+        cancelEditing();
+      } else {
+        if (!historicalNames.includes(name)) historicalNames.push(name);
+        if (place && !historicalPlaces.includes(place)) historicalPlaces.push(place);
+
+        currentEntries.push({
+          id: Date.now(),
+          date, place, name, raw, count,
+          rate: currentRate,
+          grossWage,
+          advance,
+          pidimaanam,
+          netWage
+        });
+        document.getElementById('workerName').value = '';
+        document.getElementById('coconutCount').value = '';
+        document.getElementById('advanceAmount').value = '';
+        document.getElementById('pidimaanamAmount').value = '';
+        document.getElementById('workerName').focus();
+      }
+
+      saveCurrentState();
+    }
+
+    function deleteEntry(id) {
+      if (confirm('இந்த தொழிலாளர் பதிவை நீக்க வேண்டுமா?')) {
+        if (editingId === id) cancelEditing();
+        currentEntries = currentEntries.filter(e => e.id !== id);
+        saveCurrentState();
+      }
+    }
+
+    // 💾 முழு நாள் கணக்கை சேமித்தல் (அட்வான்ஸ் & பிடிமானம் இரண்டையும் கழித்து)
+    function saveFullDayBatch() {
+      if (currentEntries.length === 0) return alert('சேமிப்பதற்கு கணக்குகள் எதுவும் இல்லை!');
+      const date = currentEntries[0].date;
+      const place = currentEntries[0].place || 'குறிப்பிடப்படவில்லை';
+      const totCount = currentEntries.reduce((s, i) => s + i.count, 0);
+      const totGross = currentEntries.reduce((s, i) => s + (i.grossWage || 0), 0);
+      const totAdvance = currentEntries.reduce((s, i) => s + (i.advance || 0), 0);
+      const totPidimaanam = currentEntries.reduce((s, i) => s + (i.pidimaanam || 0), 0);
+      const totNet = currentEntries.reduce((s, i) => s + (i.netWage !== undefined ? i.netWage : (i.grossWage - (i.advance||0) - (i.pidimaanam||0))), 0);
+
+      const confirmMsg = `இன்றைய கணக்கை முடிக்கலாமா?\n\n📅 தேதி: ${date}\n📍 இடம்: ${place}\n🥥 மொத்தக் காய்கள்: ${totCount}\n💰 மொத்த கூலி: ₹${totGross}\n🔻 அட்வான்ஸ் கழிவு: ₹${totAdvance}\n🏷️ பிடிமானம் கழிவு: ₹${totPidimaanam}\n💵 நிகர சம்பளம்: ₹${totNet}`;
+      
+      if (confirm(confirmMsg)) {
+        savedBatches.unshift({
+          id: Date.now(),
+          date, place,
+          totalCoconuts: totCount,
+          totalGrossWage: totGross,
+          totalAdvance: totAdvance,
+          totalPidimaanam: totPidimaanam,
+          totalNetWage: totNet,
+          items: [...currentEntries]
+        });
+
+        currentEntries = [];
+        cancelEditing();
+        saveCurrentState();
+        alert('🎉 இன்றைய நாளின் கணக்கு வெற்றிகரமாகச் சேமிக்கப்பட்டது!');
+        switchTab('history');
+      }
+    }
+
+    function saveCurrentState() {
+      localStorage.setItem('mukkan_active_entries_v18', JSON.stringify(currentEntries));
+      localStorage.setItem('mukkan_batches_v18', JSON.stringify(savedBatches));
+      localStorage.setItem('mukkan_names_v18', JSON.stringify(historicalNames));
+      localStorage.setItem('mukkan_places_v18', JSON.stringify(historicalPlaces));
+      document.getElementById('savedBadge').textContent = savedBatches.length;
+      renderCurrentList();
+    }
+
+    function renderCurrentList() {
+      const list = document.getElementById('currentEntriesList');
+      let totCount = 0, totGross = 0, totAdv = 0, totPidi = 0, totNet = 0;
+
+      list.innerHTML = currentEntries.map((e, idx) => {
+        const gross = e.grossWage !== undefined ? e.grossWage : Math.round(e.count * (e.rate || 1.0));
+        const adv = e.advance || 0;
+        const pidi = e.pidimaanam || 0;
+        const net = e.netWage !== undefined ? e.netWage : (gross - adv - pidi);
+
+        totCount += e.count;
+        totGross += gross;
+        totAdv += adv;
+        totPidi += pidi;
+        totNet += net;
+
+        const hasBreakdown = e.raw && e.raw.includes('+') && e.raw !== String(e.count);
+        return `
+          <div class="entry-item">
+            <div class="entry-info">
+              <div class="name">${idx + 1}. ${e.name}</div>
+              <div class="wage-breakdown">
+                கூலி: ₹${gross} (@₹${e.rate || 1.0})
+                ${adv > 0 ? ` | <span class="advance-tag">அட்: -₹${adv}</span>` : ''}
+                ${pidi > 0 ? ` | <span class="pidi-tag">பிடிமானம்: -₹${pidi}</span>` : ''}
+                | <span class="net-tag">மீதம்: ₹${net}</span>
+              </div>
+              ${hasBreakdown ? `<div class="breakdown">கணக்கு: ${e.raw}</div>` : ''}
+            </div>
+            <div class="entry-right-controls">
+              <div class="entry-count-box">
+                <div class="entry-count">${e.count} காய்</div>
+                <div class="entry-net-pay">₹${net}</div>
+              </div>
+              <button class="btn-action-edit" onclick="startEditEntry(${e.id})" title="கணக்கை மாற்று">✏️</button>
+              <button class="btn-action-del" onclick="deleteEntry(${e.id})" title="நீக்கு">✕</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('grandTotalCoconuts').innerText = totCount;
+      document.getElementById('grandTotalGrossWage').innerText = '₹' + totGross.toLocaleString('en-IN');
+      document.getElementById('grandTotalAdvance').innerText = '₹' + totAdv.toLocaleString('en-IN');
+      document.getElementById('grandTotalPidimaanam').innerText = '₹' + totPidi.toLocaleString('en-IN');
+      document.getElementById('grandTotalNetWage').innerText = '₹' + totNet.toLocaleString('en-IN');
+    }
+
+    // 🔍 சேமித்த கணக்குகளைத் தேடுதல் & திரையிடுதல்
+    function renderHistory() {
+      const sDate = document.getElementById('searchDate').value;
+      const sKey = document.getElementById('searchKeyword').value.trim().toLowerCase();
+      const container = document.getElementById('historyListContainer');
+
+      const filtered = savedBatches.filter(b => {
+        let matchDate = sDate ? (b.date === sDate) : true;
+        let matchKey = sKey ? (
+          (b.place || '').toLowerCase().includes(sKey) ||
+          b.items.some(i => i.name.toLowerCase().includes(sKey))
+        ) : true;
+        return matchDate && matchKey;
+      });
+
+      document.getElementById('historySummaryCount').innerText = `சேமிக்கப்பட்ட நாட்கள் (${filtered.length}):`;
+
+      if (filtered.length === 0) {
+        container.innerHTML = '<div style="text-align:center; padding: 25px; color: #94a3b8; font-size: 13px;">சேமித்த கணக்குகள் எதுவும் கிடைக்கவில்லை.</div>';
+        return;
+      }
+
+      container.innerHTML = filtered.map(b => {
+        const gross = b.totalGrossWage || b.totalWage || 0;
+        const adv = b.totalAdvance || 0;
+        const pidi = b.totalPidimaanam || 0;
+        const net = b.totalNetWage !== undefined ? b.totalNetWage : (gross - adv - pidi);
+
+        return `
+        <div class="history-card">
+          <div class="history-top">
+            <div>
+              <div class="history-date">📅 தேதி: ${b.date}</div>
+              <div class="history-place">📍 இடம்: ${b.place}</div>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-weight: 800; color: #15803d; font-size: 15px;">${b.totalCoconuts} காய்</div>
+              <div style="font-weight: 800; color: #0284c7; font-size: 13px;">நிகரம்: ₹${net}</div>
+            </div>
+          </div>
+          
+          <div class="history-summary-stats">
+            <div>கூலி: <span style="color:#15803d;">₹${gross}</span></div>
+            <div>| அட்வான்ஸ்: <span style="color:#dc2626;">₹${adv}</span></div>
+            ${pidi > 0 ? `<div>| பிடிமானம்: <span style="color:#b45309;">₹${pidi}</span></div>` : ''}
+            <div>| வழங்கியது: <span style="color:#0284c7;">₹${net}</span></div>
+          </div>
+
+          <div class="history-names">
+            ${b.items.map(i => {
+              const iGross = i.grossWage !== undefined ? i.grossWage : Math.round(i.count * (i.rate || 1.0));
+              const iAdv = i.advance || 0;
+              const iPidi = i.pidimaanam || 0;
+              const iNet = i.netWage !== undefined ? i.netWage : (iGross - iAdv - iPidi);
+              const bd = (i.raw && String(i.raw).includes('+') && String(i.raw).trim() !== String(i.count).trim()) ? ` (${i.raw} = ${i.count} காய்)` : ` ${i.count} காய்`;
+              const advText = iAdv > 0 ? ` [அட்: -₹${iAdv}]` : '';
+              const pidiText = iPidi > 0 ? ` [பிடிமானம்: -₹${iPidi}]` : '';
+              return `<b>${i.name}</b>:${bd} = கூலி ₹${iGross}${advText}${pidiText} ➔ <b>மீதம் ₹${iNet}</b>`;
+            }).join('<br>')}
+          </div>
+
+          <div style="display: flex; gap: 6px; justify-content: flex-end; margin-top: 8px; flex-wrap: wrap;">
+            <button onclick="editBatchPlace(${b.id})" style="background: #e0f2fe; color: #0369a1; border: 1.5px solid #7dd3fc; padding: 6px 11px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer;">📍 இடம் மாற்று</button>
+            <button onclick="shareWhatsAppPDF(${b.id})" style="background: #25D366; color: white; border: none; padding: 6px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer;">📄 WhatsApp PDF</button>
+            <button onclick="generatePDF(${b.id})" style="background: #0284c7; color: white; border: none; padding: 6px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer;">📥 PDF</button>
+            <button onclick="shareBatchWhatsApp(${b.id})" style="background: #16a34a; color: white; border: none; padding: 6px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer;">💬 மெசேஜ்</button>
+            <button onclick="editSavedBatch(${b.id})" style="background: #fef3c7; color: #b45309; border: 1px solid #fde047; padding: 6px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer;">🔄 முகப்பிற்கு மாற்று</button>
+            <button class="history-btn-del" onclick="deleteBatch(${b.id})">நீக்கு</button>
+          </div>
+        </div>
+      `;
+      }).join('');
+    }
+
+    // 📄 PDF அச்சிடுதல் / பதிவிறக்குதல் (With Advance, Pidimaanam & Net Pay columns)
+    function generatePDF(batchOrItems) {
+      let items = [];
+      let date = '';
+      let place = '';
+      let totalCoconuts = 0;
+      let totalGross = 0;
+      let totalAdvance = 0;
+      let totalPidimaanam = 0;
+      let totalNet = 0;
+
+      if (Array.isArray(batchOrItems)) {
+        items = batchOrItems;
+        if (items.length === 0) return alert('கணக்குகள் எதுவும் இல்லை!');
+        date = items[0].date || new Date().toISOString().split('T')[0];
+        place = items[0].place || 'தோட்டம்';
+        totalCoconuts = items.reduce((s, i) => s + i.count, 0);
+        totalGross = items.reduce((s, i) => s + (i.grossWage !== undefined ? i.grossWage : Math.round(i.count * (i.rate || 1.0))), 0);
+        totalAdvance = items.reduce((s, i) => s + (i.advance || 0), 0);
+        totalPidimaanam = items.reduce((s, i) => s + (i.pidimaanam || 0), 0);
+        totalNet = items.reduce((s, i) => s + (i.netWage !== undefined ? i.netWage : ((i.grossWage || Math.round(i.count * (i.rate||1.0))) - (i.advance||0) - (i.pidimaanam||0))), 0);
+      } else {
+        const b = savedBatches.find(x => x.id === batchOrItems);
+        if (!b) return alert('கணக்கு கிடைக்கவில்லை!');
+        items = b.items || [];
+        date = b.date;
+        place = b.place;
+        totalCoconuts = b.totalCoconuts;
+        totalGross = b.totalGrossWage || b.totalWage || 0;
+        totalAdvance = b.totalAdvance || 0;
+        totalPidimaanam = b.totalPidimaanam || 0;
+        totalNet = b.totalNetWage !== undefined ? b.totalNetWage : (totalGross - totalAdvance - totalPidimaanam);
+      }
+
+      const printWin = window.open('', '_blank');
+      let tableRows = items.map((e, idx) => {
+        const gross = e.grossWage !== undefined ? e.grossWage : Math.round(e.count * (e.rate || 1.0));
+        const adv = e.advance || 0;
+        const pidi = e.pidimaanam || 0;
+        const net = e.netWage !== undefined ? e.netWage : (gross - adv - pidi);
+        const hasBreakdown = e.raw && String(e.raw).includes('+') && String(e.raw).trim() !== String(e.count).trim();
+
+        return `
+        <tr style="border-bottom: 1px solid #cbd5e1; text-align: center;">
+          <td style="padding: 7px 4px;">${idx + 1}</td>
+          <td style="padding: 7px 6px; text-align: left;">
+            <b>${e.name}</b>
+            ${hasBreakdown ? `<div style="font-size: 10px; color: #047857; margin-top: 1px;">கணக்கு: ${e.raw}</div>` : ''}
+          </td>
+          <td style="padding: 7px 4px;">₹${e.rate || 1.0}</td>
+          <td style="padding: 7px 6px; font-weight: bold; color: #15803d; text-align: right;">${e.count} காய்</td>
+          <td style="padding: 7px 6px; text-align: right;">₹${gross}</td>
+          <td style="padding: 7px 6px; color: #dc2626; font-weight: bold; text-align: right;">${adv > 0 ? '-₹' + adv : '₹0'}</td>
+          <td style="padding: 7px 6px; color: #b45309; font-weight: bold; text-align: right;">${pidi > 0 ? '-₹' + pidi : '₹0'}</td>
+          <td style="padding: 7px 6px; font-weight: 800; color: #0284c7; text-align: right;">₹${net}</td>
+        </tr>
+      `;
+      }).join('');
+
+      const htmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <title>முக்கண் தேங்காய் உரிக்கும் சங்கம் - ${date}</title>
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans Tamil", sans-serif; padding: 20px; color: #0f172a; }
+            .header { text-align: center; border-bottom: 3px solid #15803d; padding-bottom: 10px; margin-bottom: 15px; }
+            .title { font-size: 22px; font-weight: bold; color: #15803d; }
+            .meta { font-size: 13px; color: #475569; margin-top: 5px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+            th { background: #f1f5f9; padding: 9px 6px; font-size: 12px; border-bottom: 2px solid #94a3b8; }
+            td { font-size: 12px; }
+            .total-box { margin-top: 18px; background: #f0fdf4; border: 2px solid #86efac; border-radius: 8px; padding: 12px; }
+            .total-grid { display: flex; justify-content: space-between; font-size: 13px; font-weight: bold; flex-wrap: wrap; gap: 8px; }
+            .net-box { font-size: 16px; font-weight: 800; color: #0284c7; text-align: right; margin-top: 8px; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div class="title">🥥 முக்கண் தேங்காய் உரிக்கும் சங்கம்</div>
+            <div class="meta"><b>தேதி:</b> ${date} &nbsp;|&nbsp; <b>இடம்:</b> ${place}</div>
+            <div style="font-size: 12px; color: #64748b; margin-top: 3px;">தேங்காய் உரித்த காய், சம்பளம், அட்வான்ஸ் & பிடிமானம் கழிவு அறிக்கை</div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 30px;">எண்</th>
+                <th style="text-align: left;">தொழிலாளி பெயர்</th>
+                <th>கூலி வீதம்</th>
+                <th style="text-align: right;">உரித்த காய்</th>
+                <th style="text-align: right;">மொத்த கூலி</th>
+                <th style="text-align: right;">அட்வான்ஸ்</th>
+                <th style="text-align: right;">பிடிமானம்</th>
+                <th style="text-align: right;">மீத சம்பளம்</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${tableRows}
+            </tbody>
+          </table>
+          <div class="total-box">
+            <div class="total-grid">
+              <div>தொழிலாளர்கள்: ${items.length} பேர்</div>
+              <div>மொத்தக் காய்கள்: <span style="color:#15803d;">${totalCoconuts} காய்</span></div>
+              <div>மொத்த கூலி: ₹${totalGross}</div>
+              <div style="color: #dc2626;">கழித்த அட்வான்ஸ்: ₹${totalAdvance}</div>
+              <div style="color: #b45309;">கழித்த பிடிமானம்: ₹${totalPidimaanam}</div>
+            </div>
+            <div class="net-box">வழங்க வேண்டிய நிகர சம்பளம்: ₹${totalNet}</div>
+          </div>
+          <script>
+            window.onload = function() { window.print(); };
+          <\/script>
+        </body>
+        </html>
+      `;
+
+      printWin.document.write(htmlContent);
+      printWin.document.close();
+    }
+
+    function shareWhatsAppPDF(batchOrItems) {
+      alert('1. அடுத்து வரும் பிரிண்ட் திரையில் "Save as PDF" கொடுத்து சேமிக்கவும்.\n2. பின் அந்த PDF கோப்பை வாட்ஸ்அப்பில் பகிரலாம்!');
+      generatePDF(batchOrItems);
+    }
+
+    function shareBatchWhatsApp(batchId) {
+      const b = savedBatches.find(x => x.id === batchId);
+      if (!b) return;
+
+      const gross = b.totalGrossWage || b.totalWage || 0;
+      const adv = b.totalAdvance || 0;
+      const pidi = b.totalPidimaanam || 0;
+      const net = b.totalNetWage !== undefined ? b.totalNetWage : (gross - adv - pidi);
+
+      let txt = '🥥 *முக்கண் தேங்காய் உரிக்கும் சங்கம்*\n';
+      txt += `📅 *தேதி:* ${b.date}\n`;
+      if (b.place && b.place !== 'குறிப்பிடப்படவில்லை') {
+        txt += `📍 *இடம்:* ${b.place}\n`;
+      }
+      txt += '--------------------------------\n';
+
+      (b.items || []).forEach((e, i) => {
+        const iGross = e.grossWage !== undefined ? e.grossWage : Math.round(e.count * (e.rate || 1.0));
+        const iAdv = e.advance || 0;
+        const iPidi = e.pidimaanam || 0;
+        const iNet = e.netWage !== undefined ? e.netWage : (iGross - iAdv - iPidi);
+        const bd = (e.raw && String(e.raw).includes('+') && String(e.raw).trim() !== String(e.count).trim()) ? ` (${e.raw} = ${e.count} காய்)` : ` ${e.count} காய்`;
+        const advTxt = iAdv > 0 ? ` [அட்: -₹${iAdv}]` : '';
+        const pidiTxt = iPidi > 0 ? ` [பிடிமானம்: -₹${iPidi}]` : '';
+        txt += `${i+1}. *${e.name}* :${bd} = கூலி ₹${iGross}${advTxt}${pidiTxt} ➔ *மீதம்: ₹${iNet}*\n`;
+      });
+
+      txt += '--------------------------------\n';
+      txt += `🥥 *மொத்தக் காய்கள்:* ${b.totalCoconuts} காய்\n`;
+      txt += `💰 *மொத்த கூலி:* ₹${gross}\n`;
+      if (adv > 0) txt += `🔻 *அட்வான்ஸ் கழிவு:* ₹${adv}\n`;
+      if (pidi > 0) txt += `🏷️ *பிடிமானம் கழிவு:* ₹${pidi}\n`;
+      txt += `💵 *நிகர சம்பளம்:* ₹${net}\n`;
+      txt += `👥 *மொத்த ஆட்கள்:* ${(b.items || []).length}\n`;
+
+      window.open('https://api.whatsapp.com/send?text=' + encodeURIComponent(txt), '_blank');
+    }
+
+    function shareWhatsApp() {
+      if (currentEntries.length === 0) return alert('பட்டியலில் கணக்கு எதுவும் இல்லை!');
+      let txt = '🥥 *முக்கண் தேங்காய் உரிக்கும் சங்கம்*\n\n';
+      const d = document.getElementById('entryDate').value || '';
+      const p = document.getElementById('placeName').value || '';
+      if (d) txt += `📅 தேதி: ${d}\n`;
+      if (p) txt += `📍 இடம்: ${p}\n`;
+      txt += '--------------------------------\n';
+
+      let totCount = 0, totGross = 0, totAdv = 0, totPidi = 0, totNet = 0;
+      currentEntries.forEach((e, i) => {
+        const gross = e.grossWage !== undefined ? e.grossWage : Math.round(e.count * (e.rate || 1.0));
+        const adv = e.advance || 0;
+        const pidi = e.pidimaanam || 0;
+        const net = e.netWage !== undefined ? e.netWage : (gross - adv - pidi);
+        const bd = (e.raw && String(e.raw).includes('+') && String(e.raw).trim() !== String(e.count).trim()) ? ` (${e.raw} = ${e.count} காய்)` : ` ${e.count} காய்`;
+        const advTxt = adv > 0 ? ` [அட்: -₹${adv}]` : '';
+        const pidiTxt = pidi > 0 ? ` [பிடிமானம்: -₹${pidi}]` : '';
+        
+        txt += `${i + 1}. *${e.name}* :${bd} = கூலி ₹${gross}${advTxt}${pidiTxt} ➔ *மீதம் ₹${net}*\n`;
+        totCount += e.count;
+        totGross += gross;
+        totAdv += adv;
+        totPidi += pidi;
+        totNet += net;
+      });
+
+      txt += '--------------------------------\n';
+      txt += `🥥 *மொத்தக் காய்கள்:* ${totCount} காய்\n`;
+      txt += `💰 *மொத்த கூலி:* ₹${totGross}\n`;
+      if (totAdv > 0) txt += `🔻 *அட்வான்ஸ் கழிவு:* ₹${totAdv}\n`;
+      if (totPidi > 0) txt += `🏷️ *பிடிமானம் கழிவு:* ₹${totPidi}\n`;
+      txt += `💵 *நிகர சம்பளம்:* ₹${totNet}\n`;
+
+      window.open('https://api.whatsapp.com/send?text=' + encodeURIComponent(txt), '_blank');
+    }
+
+    function editBatchPlace(batchId) {
+      const b = savedBatches.find(x => x.id === batchId);
+      if (!b) return alert('கணக்கு கிடைக்கவில்லை!');
+      const currentPlace = (b.place && b.place !== 'குறிப்பிடப்படவில்லை') ? b.place : '';
+      const newPlace = prompt(`📅 ${b.date} நாளின் புதிய இடத்தை உள்ளிடவும் (தோட்டம் பெயர்):`, currentPlace);
+      
+      if (newPlace !== null) {
+        const trimmed = newPlace.trim() || 'குறிப்பிடப்படவில்லை';
+        b.place = trimmed;
+        if (b.items && Array.isArray(b.items)) {
+          b.items.forEach(it => { it.place = trimmed; });
+        }
+        if (trimmed !== 'குறிப்பிடப்படவில்லை' && !historicalPlaces.includes(trimmed)) {
+          historicalPlaces.push(trimmed);
+        }
+        saveCurrentState();
+        renderHistory();
+        alert('✅ இடம் வெற்றிகரமாக மாற்றப்பட்டது!');
+      }
+    }
+
+    function editSavedBatch(batchId) {
+      const batch = savedBatches.find(b => b.id === batchId);
+      if (!batch) return;
+
+      if (currentEntries.length > 0) {
+        if (!confirm('தற்போது திரையில் இருக்கும் கணக்குகள் மாற்றப்பட்டு, தேர்ந்தெடுக்கப்பட்ட நாளின் கணக்கு திறக்கப்படும். தொடரலாமா?')) {
+          return;
+        }
+      }
+
+      currentEntries = JSON.parse(JSON.stringify(batch.items || []));
+      document.getElementById('entryDate').value = batch.date || new Date().toISOString().split('T')[0];
+      document.getElementById('placeName').value = batch.place && batch.place !== 'குறிப்பிடப்படவில்லை' ? batch.place : '';
+
+      savedBatches = savedBatches.filter(b => b.id !== batchId);
+      saveCurrentState();
+
+      switchTab('current');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      alert('✅ ' + batch.date + ' நாளின் கணக்கு திறக்கப்பட்டுள்ளது!');
+    }
+
+    function deleteBatch(id) {
+      if (confirm('இந்த நாளின் சேமித்த கணக்கை நீக்க வேண்டுமா?')) {
+        savedBatches = savedBatches.filter(b => b.id !== id);
+        saveCurrentState();
+        renderHistory();
+      }
+    }
+
+    function clearCurrentEntries() {
+      if (currentEntries.length === 0) return alert('இன்றைய பட்டியலில் கணக்குகள் எதுவும் இல்லை!');
+      if (confirm('இன்றைய கணக்குப் பட்டியலை முழுமையாக அழிக்க வேண்டுமா?')) {
+        currentEntries = [];
+        cancelEditing();
+        saveCurrentState();
+        alert('✅ இன்றைய கணக்குகள் அனைத்தும் அழிக்கப்பட்டன!');
+      }
+    }
+
+    function downloadBackupFile() {
+      const backupData = {
+        app: "mukkan_kanakku",
+        version: "v19",
+        date: new Date().toISOString(),
+        currentEntries: currentEntries,
+        savedBatches: savedBatches,
+        historicalNames: historicalNames,
+        historicalPlaces: historicalPlaces
+      };
+
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData));
+      const downloadAnchor = document.createElement('a');
+      const filename = 'mukkan_kanakku_backup_' + new Date().toISOString().split('T')[0] + '.json';
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", filename);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+
+      alert('✅ உங்கள் கணக்குகள் அனைத்தும் Backup கோப்பாக (JSON) பதிவிறக்கம் ஆகிவிட்டது!');
+    }
+
+    function restoreBackupFile(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const data = JSON.parse(e.target.result);
+          if (data && data.app === "mukkan_kanakku") {
+            currentEntries = data.currentEntries || [];
+            savedBatches = data.savedBatches || [];
+            historicalNames = data.historicalNames || [];
+            historicalPlaces = data.historicalPlaces || [];
+
+            saveCurrentState();
+            renderHistory();
+            alert('🎉 Backup கோப்பில் இருந்த அனைத்து கணக்குகளும் வெற்றிகரமாக மீண்டும் ஏற்றப்பட்டுவிட்டன!');
+          } else {
+            alert('⚠️ தவறான Backup கோப்பு!');
+          }
+        } catch (err) {
+          alert('⚠️ கோப்பைப் படிப்பதில் பிழை ஏற்பட்டது!');
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = '';
+    }
+
+    function resetAllAppData() {
+      if (confirm('⚠️ எச்சரிக்கை:\n\nஅனைத்து பெயர்கள் & கணக்குகளும் நிரந்தரமாக அழிக்கப்படும்! தொடரலாமா?')) {
+        if (confirm('உறுதியாக அனைத்தையும் அழிக்க விரும்புகிறீர்களா?')) {
+          localStorage.removeItem('mukkan_active_entries_v18');
+          localStorage.removeItem('mukkan_batches_v18');
+          localStorage.removeItem('mukkan_names_v18');
+          localStorage.removeItem('mukkan_places_v18');
+          
+          currentEntries = [];
+          savedBatches = [];
+          historicalNames = [];
+          historicalPlaces = [];
+          tempDetectedItems = [];
+          editingId = null;
+
+          document.getElementById('workerName').value = '';
+          document.getElementById('coconutCount').value = '';
+          document.getElementById('advanceAmount').value = '';
+          document.getElementById('pidimaanamAmount').value = '';
+          document.getElementById('ocrResultBox').style.display = 'none';
+          const prev = document.getElementById('previewImg');
+          if (prev) prev.style.display = 'none';
+
+          cancelEditing();
+          saveCurrentState();
+          renderHistory();
+          alert('🗑️ அனைத்து கணக்குகளும் முழுமையாக அழிக்கப்பட்டுவிட்டன!');
+        }
+      }
+    }
+
+    function copyOcrDetectedText() {
+      if (!tempDetectedItems || tempDetectedItems.length === 0) return alert('கணக்குகள் எதுவும் இல்லை!');
+      let txt = '🥥 *முக்கண் தேங்காய் உரிக்கும் சங்கம் - கணக்கு விவரம்*\n';
+      txt += '--------------------------------\n';
+      let total = 0;
+      tempDetectedItems.forEach((item, idx) => {
+        const bd = (item.raw && String(item.raw).includes('+')) ? ` (${item.raw} = ${item.count} காய்)` : ` ${item.count} காய்`;
+        const advTxt = item.advance > 0 ? ` [அட்: ₹${item.advance}]` : '';
+        const pidiTxt = item.pidimaanam > 0 ? ` [பிடிமானம்: ₹${item.pidimaanam}]` : '';
+        txt += `${idx + 1}. ${item.name} :${bd}${advTxt}${pidiTxt}\n`;
+        total += item.count;
+      });
+      txt += '--------------------------------\n';
+      txt += `🥥 மொத்தக் காய்கள்: ${total} காய்\n`;
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(txt).then(() => alert('✅ கணக்குகள் Copy செய்யப்பட்டன!'));
+      }
+    }
+
+    function copyCurrentListText() {
+      if (!currentEntries || currentEntries.length === 0) return alert('பட்டியலில் கணக்கு எதுவும் இல்லை!');
+      let txt = '🥥 *முக்கண் தேங்காய் உரிக்கும் சங்கம்*\n\n';
+      const d = document.getElementById('entryDate').value || '';
+      const p = document.getElementById('placeName').value || '';
+      if (d) txt += `📅 தேதி: ${d}\n`;
+      if (p) txt += `📍 இடம்: ${p}\n`;
+      txt += '--------------------------------\n';
+
+      let totCount = 0, totGross = 0, totAdv = 0, totPidi = 0, totNet = 0;
+      currentEntries.forEach((e, i) => {
+        const gross = e.grossWage !== undefined ? e.grossWage : Math.round(e.count * (e.rate || 1.0));
+        const adv = e.advance || 0;
+        const pidi = e.pidimaanam || 0;
+        const net = e.netWage !== undefined ? e.netWage : (gross - adv - pidi);
+        const bd = (e.raw && String(e.raw).includes('+') && String(e.raw).trim() !== String(e.count).trim()) ? ` (${e.raw} = ${e.count} காய்)` : ` ${e.count} காய்`;
+        const advTxt = adv > 0 ? ` [அட்: -₹${adv}]` : '';
+        const pidiTxt = pidi > 0 ? ` [பிடிமானம்: -₹${pidi}]` : '';
+
+        txt += `${i + 1}. *${e.name}* :${bd} = கூலி ₹${gross}${advTxt}${pidiTxt} ➔ மீதம் ₹${net}\n`;
+        totCount += e.count;
+        totGross += gross;
+        totAdv += adv;
+        totPidi += pidi;
+        totNet += net;
+      });
+      txt += '--------------------------------\n';
+      txt += `🥥 மொத்தக் காய்கள்: ${totCount} காய்\n`;
+      txt += `💰 மொத்த கூலி: ₹${totGross}\n`;
+      if (totAdv > 0) txt += `🔻 அட்வான்ஸ் கழிவு: ₹${totAdv}\n`;
+      if (totPidi > 0) txt += `🏷️ பிடிமானம் கழிவு: ₹${totPidi}\n`;
+      txt += `💵 நிகர சம்பளம்: ₹${totNet}\n`;
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(txt).then(() => alert('✅ விவரங்கள் Copy செய்யப்பட்டன!'));
+      }
+    }
+
+    // 📊 மொத்த கணக்கு (வியாபாரின் கணக்கு) JS LOGIC
+    let traderCurrentRate = 1.0;
+
+    function setTodayTraderDate() {
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const dd = String(today.getDate()).padStart(2, '0');
+      const dateEl = document.getElementById('traderBillDate');
+      if (dateEl && !dateEl.value) {
+        dateEl.value = `${yyyy}-${mm}-${dd}`;
+      }
+    }
+
+    function getFormattedTraderDate() {
+      const rawDate = document.getElementById('traderBillDate').value;
+      if (!rawDate) return '';
+      const parts = rawDate.split('-');
+      if (parts.length === 3) {
+        return `${parts[2]}/${parts[1]}/${parts[0]}`;
+      }
+      return rawDate;
+    }
+
+    function setTraderRate(rate) {
+      traderCurrentRate = parseFloat(rate) || 1.0;
+      const rInput = document.getElementById('traderRateInput');
+      if (rInput) rInput.value = traderCurrentRate;
+      recomputeTraderCooli();
+    }
+
+    function onTraderRateInputChange() {
+      const rInput = document.getElementById('traderRateInput');
+      traderCurrentRate = parseFloat(rInput ? rInput.value : 1.0) || 1.0;
+      recomputeTraderCooli();
+    }
+
+    function onTraderKaiCountChange() {
+      recomputeTraderCooli();
+    }
+
+    function recomputeTraderCooli() {
+      const totalKai = parseFloat(document.getElementById('totalKai').value) || 0;
+      const cooli = Math.round(totalKai * traderCurrentRate);
+      document.getElementById('uriCooli').value = cooli;
+      calculateTraderBill();
+    }
+
+    function calculateTraderBill() {
+      const uriCooli = parseFloat(document.getElementById('uriCooli').value) || 0;
+      const teaCost = parseFloat(document.getElementById('teaCost').value) || 0;
+      const leaderBadi = parseFloat(document.getElementById('leaderBadi').value) || 0;
+      const personBadi = parseFloat(document.getElementById('personBadi').value) || 0;
+      const advance = parseFloat(document.getElementById('traderAdvance').value) || 0;
+
+      const total = (uriCooli + teaCost + leaderBadi + personBadi) - advance;
+      document.getElementById('traderFinalTotal').innerText = '₹ ' + Math.round(total).toLocaleString('en-IN');
+      return total;
+    }
+
+    function loadTodayToTraderBill() {
+      let sumCount = currentEntries.reduce((s, i) => s + (i.count || 0), 0);
+      let sumWage = currentEntries.reduce((s, i) => s + (i.grossWage !== undefined ? i.grossWage : Math.round(i.count * (i.rate || 1.0))), 0);
+      let sumAdv = currentEntries.reduce((s, i) => s + (i.advance || 0), 0);
+      
+      const activePlace = (currentEntries.length > 0 && currentEntries[0].place && currentEntries[0].place !== 'குறிப்பிடப்படவில்லை') 
+                          ? currentEntries[0].place 
+                          : document.getElementById('placeName').value.trim();
+      const activeDate = (currentEntries.length > 0 && currentEntries[0].date) 
+                         ? currentEntries[0].date 
+                         : document.getElementById('entryDate').value;
+
+      let detectedRate = currentRate || 1.0;
+      if (currentEntries.length > 0 && currentEntries[0].rate) {
+        detectedRate = currentEntries[0].rate;
+      }
+
+      setTraderRate(detectedRate);
+
+      if (activePlace) document.getElementById('traderPlace').value = activePlace;
+      if (activeDate) document.getElementById('traderBillDate').value = activeDate;
+
+      if (sumCount > 0 || sumWage > 0 || activePlace) {
+        document.getElementById('totalKai').value = sumCount > 0 ? sumCount : (sumWage || 0);
+        document.getElementById('uriCooli').value = sumWage > 0 ? sumWage : Math.round(sumCount * traderCurrentRate);
+        if (sumAdv > 0) document.getElementById('traderAdvance').value = sumAdv;
+        calculateTraderBill();
+        alert('✅ இன்றைய கணக்கு வெற்றிகரமாக ஏற்றப்பட்டது!');
+      } else {
+        alert('இன்றைய பட்டியலில் கணக்குகள் எதுவும் இல்லை!');
+      }
+    }
+
+    function showTraderPlaceSuggestions() {
+      const input = document.getElementById('traderPlace');
+      const box = document.getElementById('traderPlaceSuggestionsBox');
+      const val = input.value.trim().toLowerCase();
+
+      if (!val) { box.style.display = 'none'; return; }
+      const allPlaces = Array.from(new Set([...historicalPlaces, ...currentEntries.map(e => e.place)])).filter(Boolean);
+      const filtered = allPlaces.filter(p => p.toLowerCase().includes(val));
+
+      if (filtered.length === 0) { box.style.display = 'none'; return; }
+      box.innerHTML = filtered.map(p => `
+        <div class="suggestion-item" onmousedown="document.getElementById('traderPlace').value='${p}'; document.getElementById('traderPlaceSuggestionsBox').style.display='none';">
+          <span>📍 ${p}</span>
+          <span style="font-size: 11px; color: #16a34a;">தேர்ந்தெடு ➜</span>
+        </div>
+      `).join('');
+      box.style.display = 'block';
+    }
+
+    function shareTraderWhatsApp() {
+      const name = document.getElementById('traderName').value.trim() || '-';
+      const date = getFormattedTraderDate() || '-';
+      const place = document.getElementById('traderPlace').value.trim() || '-';
+      const kai = Number(document.getElementById('totalKai').value || 0).toLocaleString('en-IN');
+      const rateStr = traderCurrentRate.toFixed(2);
+      const cooli = Number(document.getElementById('uriCooli').value || 0).toLocaleString('en-IN');
+      const tea = Number(document.getElementById('teaCost').value || 0).toLocaleString('en-IN');
+      const leader = Number(document.getElementById('leaderBadi').value || 0).toLocaleString('en-IN');
+      const person = Number(document.getElementById('personBadi').value || 0).toLocaleString('en-IN');
+      const adv = Number(document.getElementById('traderAdvance').value || 0).toLocaleString('en-IN');
+      const finalAmt = Math.round(calculateTraderBill()).toLocaleString('en-IN');
+
+      const msg = `*முக்கண் தேங்காய் உரிப்பு சங்கம்*\n` +
+                  `*வியாபாரின் கணக்கு (மொத்த கணக்கு)*\n` +
+                  `----------------------------------------\n` +
+                  `👤 *வியாபாரி:* ${name}\n` +
+                  `📅 *தேதி:* ${date}\n` +
+                  (place !== '-' ? `📍 *இடம்:* ${place}\n` : '') +
+                  `----------------------------------------\n` +
+                  `• மொத்தம் காய் : ${kai} காய்\n` +
+                  `• உரிகூலி சதவீதம் : ${rateStr}\n` +
+                  `• மொத்த உரி கூலி : ₹${cooli}\n` +
+                  `• டீ காசு : ₹${tea}\n` +
+                  `• தலைவர் படி : ₹${leader}\n` +
+                  `• ஆள் படி : ₹${person}\n` +
+                  `• அட்வான்ஸ் (-) : ₹${adv}\n` +
+                  `----------------------------------------\n` +
+                  `💰 *கடைசி மொத்தம் : ₹${finalAmt}*\n` +
+                  `----------------------------------------`;
+
+      const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
+      window.open(url, '_blank');
+    }
+
+    function resetTraderForm() {
+      document.getElementById('traderName').value = '';
+      document.getElementById('traderPlace').value = '';
+      setTodayTraderDate();
+      document.getElementById('totalKai').value = '';
+      setTraderRate(1.0);
+      document.getElementById('uriCooli').value = '';
+      document.getElementById('teaCost').value = '';
+      document.getElementById('leaderBadi').value = '';
+      document.getElementById('personBadi').value = '';
+      document.getElementById('traderAdvance').value = '';
+      document.getElementById('traderFinalTotal').innerText = '₹ 0';
+    }
+
+    function printTraderBill() {
+      const name = document.getElementById('traderName').value.trim() || '-';
+      const date = getFormattedTraderDate() || '-';
+      const place = document.getElementById('traderPlace').value.trim() || 'குறிப்பிடப்படவில்லை';
+      const kai = Number(document.getElementById('totalKai').value || 0).toLocaleString('en-IN');
+      const rateStr = traderCurrentRate.toFixed(2);
+      const cooli = Number(document.getElementById('uriCooli').value || 0).toLocaleString('en-IN');
+      const tea = Number(document.getElementById('teaCost').value || 0).toLocaleString('en-IN');
+      const leader = Number(document.getElementById('leaderBadi').value || 0).toLocaleString('en-IN');
+      const person = Number(document.getElementById('personBadi').value || 0).toLocaleString('en-IN');
+      const adv = Number(document.getElementById('traderAdvance').value || 0).toLocaleString('en-IN');
+      const finalAmt = Math.round(calculateTraderBill()).toLocaleString('en-IN');
+
+      const printWin = window.open('', '_blank');
+      const htmlContent = `
+        <!DOCTYPE html>
+        <html lang="ta">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+          <title>வியாபாரின் கணக்கு - ${name} - ${date}</title>
+          <style>
+            * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans Tamil", sans-serif; }
+            body { background-color: #f8fafc; padding: 16px 12px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 100vh; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .bill-wrapper { width: 100%; max-width: 380px; margin: 0 auto; }
+            .bill-card { background: #ffffff; border: 1.5px solid #1765cf; border-radius: 14px; overflow: hidden; box-shadow: 0 4px 15px rgba(0, 50, 150, 0.08); }
+            .bill-head { background-color: #1765cf; color: #ffffff; text-align: center; padding: 14px 10px; }
+            .bill-head h2 { font-size: 17px; font-weight: 800; margin-bottom: 4px; letter-spacing: 0.2px; }
+            .bill-badge { display: inline-block; background-color: #2563eb; color: #ffffff; padding: 3px 14px; border-radius: 12px; font-size: 12px; font-weight: bold; }
+            .bill-body { padding: 14px 16px; background: #ffffff; }
+            .bill-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 13.5px; font-weight: 600; color: #334155; }
+            .bill-row:last-of-type { border-bottom: none; }
+            .bill-row .lbl { color: #334155; }
+            .bill-row .val { font-weight: 700; color: #0f172a; text-align: right; }
+            .bill-row.adv .lbl { color: #dc2626; font-weight: 700; }
+            .bill-row.adv .val { color: #dc2626; font-weight: 800; }
+            .total-card { margin-top: 12px; background-color: #f0fdf4; border: 1.5px solid #22c55e; border-radius: 8px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; }
+            .total-card .t-lbl { font-size: 14px; font-weight: 800; color: #166534; }
+            .total-card .t-val { font-size: 18px; font-weight: 900; color: #15803d; }
+            .print-btn-bar { width: 100%; max-width: 380px; margin-top: 15px; display: flex; gap: 8px; }
+            .btn-p { flex: 1; padding: 12px; border: none; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; text-align: center; }
+            .btn-p-main { background-color: #1765cf; color: white; }
+            .btn-p-close { background-color: #e2e8f0; color: #475569; }
+            @media print {
+              body { background: transparent; padding: 0; }
+              .bill-wrapper { max-width: 100%; width: 100%; }
+              .bill-card { border: 1.5px solid #1765cf; box-shadow: none; border-radius: 12px; }
+              .print-btn-bar { display: none !important; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="bill-wrapper">
+            <div class="bill-card">
+              <div class="bill-head">
+                <h2>முக்கண் தேங்காய் உரிப்பு சங்கம்</h2>
+                <div class="bill-badge">வியாபாரின் கணக்கு (மொத்த கணக்கு)</div>
+              </div>
+              <div class="bill-body">
+                <div class="bill-row">
+                  <span class="lbl">👤 வியாபாரி:</span>
+                  <span class="val">${name}</span>
+                </div>
+                <div class="bill-row">
+                  <span class="lbl">📅 தேதி:</span>
+                  <span class="val">${date}</span>
+                </div>
+                <div class="bill-row">
+                  <span class="lbl">📍 உரித்த இடம்:</span>
+                  <span class="val">${place}</span>
+                </div>
+                <div class="bill-row">
+                  <span class="lbl">மொத்தம் காய்:</span>
+                  <span class="val">${kai} காய்</span>
+                </div>
+                <div class="bill-row">
+                  <span class="lbl">உரிகூலி சதவீதம்:</span>
+                  <span class="val">${rateStr}</span>
+                </div>
+                <div class="bill-row">
+                  <span class="lbl" style="font-weight: 700; color: #15803d;">மொத்த உரி கூலி:</span>
+                  <span class="val" style="color: #15803d;">₹${cooli}</span>
+                </div>
+                <div class="bill-row">
+                  <span class="lbl">டீ காசு:</span>
+                  <span class="val">₹${tea}</span>
+                </div>
+                <div class="bill-row">
+                  <span class="lbl">தலைவர் படி:</span>
+                  <span class="val">₹${leader}</span>
+                </div>
+                <div class="bill-row">
+                  <span class="lbl">ஆள் படி:</span>
+                  <span class="val">₹${person}</span>
+                </div>
+                <div class="bill-row adv">
+                  <span class="lbl">அட்வான்ஸ் (-):</span>
+                  <span class="val">₹${adv}</span>
+                </div>
+                <div class="total-card">
+                  <span class="t-lbl">கடைசி மொத்தம்:</span>
+                  <span class="t-val">₹${finalAmt}</span>
+                </div>
+              </div>
+            </div>
+            <div class="print-btn-bar">
+              <button class="btn-p btn-p-main" onclick="window.print()">📥 PDF சேமி / Print செய்</button>
+              <button class="btn-p btn-p-close" onclick="window.close()">மூடு</button>
+            </div>
+          </div>
+          <script>
+            window.onload = function() {
+              setTimeout(function(){ window.print(); }, 300);
+            };
+          <\/script>
+        </body>
+        </html>
+      `;
+      printWin.document.write(htmlContent);
+      printWin.document.close();
+    }
+
+    // 📲 பல போன்கள் ஸ்மார்ட் கணக்கு இணைப்பு & MERGE ENGINE
+    function toggleSyncHelpModal() {
+      const el = document.getElementById('syncHelpModal');
+      if (el) el.style.display = (el.style.display === 'block') ? 'none' : 'block';
+    }
+
+    function smartMergeEntries(incomingEntries, incomingPlace, incomingDate) {
+      if (!incomingEntries || !Array.isArray(incomingEntries) || incomingEntries.length === 0) {
+        alert('இணைப்பதற்கு கணக்குகள் எதுவும் கிடைக்கவில்லை!');
+        return 0;
+      }
+
+      let mergedCount = 0;
+      incomingEntries.forEach(inc => {
+        if (!inc.name || !inc.count) return;
+        const cleanName = String(inc.name).trim();
+        const incCount = parseInt(inc.count) || 0;
+        const incAdv = parseInt(inc.advance) || 0;
+        const incPidi = parseInt(inc.pidimaanam) || 0;
+
+        const existing = currentEntries.find(e => e.name.trim().toLowerCase() === cleanName.toLowerCase());
+        if (existing) {
+          existing.count += incCount;
+          existing.raw = existing.raw ? `${existing.raw}+${inc.raw || incCount}` : `${existing.count}`;
+          existing.advance = (existing.advance || 0) + incAdv;
+          existing.pidimaanam = (existing.pidimaanam || 0) + incPidi;
+          existing.grossWage = Math.round(existing.count * (existing.rate || currentRate));
+          existing.netWage = existing.grossWage - existing.advance - existing.pidimaanam;
+        } else {
+          const grossWage = Math.round(incCount * (inc.rate || currentRate));
+          currentEntries.push({
+            id: Date.now() + Math.random(),
+            date: inc.date || incomingDate || document.getElementById('entryDate').value,
+            place: inc.place || incomingPlace || document.getElementById('placeName').value,
+            name: cleanName,
+            raw: String(inc.raw || incCount),
+            count: incCount,
+            rate: inc.rate || currentRate,
+            grossWage: grossWage,
+            advance: incAdv,
+            pidimaanam: incPidi,
+            netWage: grossWage - incAdv - incPidi
+          });
+          if (!historicalNames.includes(cleanName)) historicalNames.push(cleanName);
+        }
+        mergedCount++;
+      });
+
+      if (incomingPlace && !document.getElementById('placeName').value) {
+        document.getElementById('placeName').value = incomingPlace;
+      }
+      if (incomingDate && !document.getElementById('entryDate').value) {
+        document.getElementById('entryDate').value = incomingDate;
+      }
+
+      saveCurrentState();
+      return mergedCount;
+    }
+
+    function shareSyncCodeWhatsApp() {
+      if (currentEntries.length === 0) {
+        alert('பட்டியலில் கணக்குகள் எதுவும் இல்லை!');
+        return;
+      }
+
+      const syncObj = {
+        app: "mukkan_kanakku",
+        type: "SYNC_BUNDLE",
+        date: document.getElementById('entryDate').value,
+        place: document.getElementById('placeName').value,
+        entries: currentEntries
+      };
+
+      const compressedCode = "MUKKAN#" + btoa(unescape(encodeURIComponent(JSON.stringify(syncObj))));
+      const totKai = currentEntries.reduce((s, i) => s + i.count, 0);
+
+      const msg = `🥥 *முக்கண் தேங்காய் உரிக்கும் சங்கம் - கணக்கு பகிர்வு*\n` +
+                  `📅 தேதி: ${syncObj.date || '-'}\n` +
+                  `📍 இடம்: ${syncObj.place || '-'}\n` +
+                  `👥 தொழிலாளர்கள்: ${currentEntries.length} பேர் (${totKai} காய்)\n` +
+                  `----------------------------------------\n` +
+                  `👇 *மற்ற போனில் இணைக்க கீழ்வரும் Code-ஐ Copy செய்யவும்:*\n\n` +
+                  `${compressedCode}`;
+
+      window.open('https://api.whatsapp.com/send?text=' + encodeURIComponent(msg), '_blank');
+    }
+
+    function copySyncCodeToClipboard() {
+      if (currentEntries.length === 0) {
+        alert('பட்டியலில் கணக்குகள் எதுவும் இல்லை!');
+        return;
+      }
+
+      const syncObj = {
+        app: "mukkan_kanakku",
+        type: "SYNC_BUNDLE",
+        date: document.getElementById('entryDate').value,
+        place: document.getElementById('placeName').value,
+        entries: currentEntries
+      };
+
+      const codeStr = "MUKKAN#" + btoa(unescape(encodeURIComponent(JSON.stringify(syncObj))));
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(codeStr).then(() => {
+          alert('📋 கணக்குக் குறியீடு (Sync Code) Copy செய்யப்பட்டது!');
+        });
+      } else {
+        prompt('இந்த குறியீட்டை Copy செய்து கொள்ளவும்:', codeStr);
+      }
+    }
+
+    function pasteAndMergeSyncCode() {
+      let codeInput = prompt('மற்ற போனில் இருந்து வந்த MUKKAN# குறியீட்டை இங்கே Paste செய்யவும்:');
+      if (!codeInput || !codeInput.trim()) return;
+
+      codeInput = codeInput.trim();
+      const match = codeInput.match(/MUKKAN#([A-Za-z0-9+/=]+)/);
+      const rawBase64 = match ? match[1] : codeInput.replace(/^MUKKAN#/, '').trim();
+
+      try {
+        const jsonStr = decodeURIComponent(escape(atob(rawBase64)));
+        const data = JSON.parse(jsonStr);
+
+        if (data && data.app === "mukkan_kanakku" && Array.isArray(data.entries)) {
+          const count = smartMergeEntries(data.entries, data.place, data.date);
+          alert(`🎉 வெற்றி! மற்ற போனில் இருந்த ${count} தொழிலாளர் கணக்குகள் உங்கள் பட்டியலுடன் வெற்றிகரமாக இணைக்கப்பட்டுவிட்டன!`);
+        } else {
+          alert('⚠️ தவறான குறியீடு!');
+        }
+      } catch (e) {
+        alert('⚠️ குறியீட்டைப் படிப்பதில் பிழை!');
+      }
+    }
+
+    // ☁️ 100% WORKING RELIABLE CLOUD ROOM SYNC
+    async function uploadToCloudSync() {
+      const roomInput = document.getElementById('sangamRoomInput');
+      const roomCode = (roomInput.value || '').trim().toUpperCase().replace(/[^A-Z0-9_-]/g, '');
+
+      if (!roomCode) {
+        alert('தயவுசெய்து அறை எண் உள்ளிடவும்! (எ.கா: 123 அல்லது MUKKAN-1)');
+        roomInput.focus();
+        return;
+      }
+
+      if (currentEntries.length === 0) {
+        alert('⚠️ பதிவேற்ற பட்டியலில் கணக்குகள் எதுவும் இல்லை! முதலில் தொழிலாளர் கணக்குகளைச் சேர்த்துவிட்டுப் பதிவேற்றவும்.');
+        return;
+      }
+
+      const statusEl = document.getElementById('cloudSyncStatus');
+      statusEl.innerText = '☁️ பதிவேற்றுகிறது...';
+      statusEl.style.color = '#2563eb';
+
+      const payload = {
+        app: "mukkan_kanakku",
+        room: roomCode,
+        updatedAt: Date.now(),
+        date: document.getElementById('entryDate').value,
+        place: document.getElementById('placeName').value,
+        entries: currentEntries
+      };
+
+      const jsonStr = JSON.stringify(payload);
+      let isSuccess = false;
+
+      // Service 1: ntfy.sh
+      try {
+        const url1 = `https://ntfy.sh/mukkan_sangam_${roomCode}`;
+        const res1 = await fetch(url1, {
+          method: 'POST',
+          headers: { 'Title': `Mukkan Sync ${roomCode}`, 'Priority': 'default' },
+          body: jsonStr
+        });
+        if (res1.ok) isSuccess = true;
+      } catch (e) {
+        console.warn('Sync Service 1 failed:', e);
+      }
+
+      // Service 2: keyvalue.immanuel.co
+      try {
+        const appKey = 'mukkan_coconut_sangam';
+        const url2 = `https://keyvalue.immanuel.co/api/KeyVal/UpdateValue/${appKey}/${roomCode}/${encodeURIComponent(jsonStr)}`;
+        const res2 = await fetch(url2, { method: 'POST' });
+        if (res2.ok) isSuccess = true;
+      } catch (e) {
+        console.warn('Sync Service 2 failed:', e);
+      }
+
+      if (isSuccess) {
+        statusEl.innerText = '✅ பதிவேற்றப்பட்டது!';
+        statusEl.style.color = '#15803d';
+        localStorage.setItem('mukkan_saved_room_code', roomCode);
+        alert(`✅ வெற்றி! '${roomCode}' அறை எண்ணில் ${currentEntries.length} தொழிலாளர் கணக்குகள் கிளவுடில் பதிவேற்றப்பட்டன!\n\nமற்ற போனில் இதே '${roomCode}' அறை எண்ணைப் போட்டு "🔄 எடு & இணை" கொடுக்கவும்.`);
+      } else {
+        statusEl.innerText = '⚠️ பிழை';
+        statusEl.style.color = '#dc2626';
+        alert('⚠️ இணைய இணைப்பைச் சரிபார்க்கவும்.');
+      }
+    }
+
+    async function downloadFromCloudSync() {
+      const roomInput = document.getElementById('sangamRoomInput');
+      const roomCode = (roomInput.value || '').trim().toUpperCase().replace(/[^A-Z0-9_-]/g, '');
+
+      if (!roomCode) {
+        alert('தயவுசெய்து அறை எண் உள்ளிடவும்! (எ.கா: 123 அல்லது MUKKAN-1)');
+        roomInput.focus();
+        return;
+      }
+
+      const statusEl = document.getElementById('cloudSyncStatus');
+      statusEl.innerText = '🔄 பதிவிறக்குகிறது...';
+      statusEl.style.color = '#0284c7';
+
+      let receivedData = null;
+
+      // Try Service 1: ntfy.sh
+      try {
+        const url1 = `https://ntfy.sh/mukkan_sangam_${roomCode}/json?poll=1`;
+        const res1 = await fetch(url1);
+        if (res1.ok) {
+          const rawText = await res1.text();
+          const lines = rawText.trim().split('\n').filter(Boolean);
+          for (let i = lines.length - 1; i >= 0; i--) {
+            try {
+              const eventObj = JSON.parse(lines[i]);
+              if (eventObj.event === 'message' && eventObj.message) {
+                const parsed = JSON.parse(eventObj.message);
+                if (parsed && (parsed.entries || Array.isArray(parsed))) {
+                  receivedData = parsed;
+                  break;
+                }
+              }
+            } catch(err) {}
+          }
+        }
+      } catch (e) {
+        console.warn('Fetch from Service 1 failed:', e);
+      }
+
+      // Try Service 2: keyvalue.immanuel.co
+      if (!receivedData) {
+        try {
+          const appKey = 'mukkan_coconut_sangam';
+          const url2 = `https://keyvalue.immanuel.co/api/KeyVal/GetValue/${appKey}/${roomCode}`;
+          const res2 = await fetch(url2);
+          if (res2.ok) {
+            const rawVal = await res2.text();
+            if (rawVal && rawVal !== 'null' && rawVal !== '""') {
+              const parsed = JSON.parse(rawVal);
+              if (parsed && (parsed.entries || Array.isArray(parsed))) {
+                receivedData = parsed;
+              }
+            }
+          }
+        } catch (e) {
+          console.warn('Fetch from Service 2 failed:', e);
+        }
+      }
+
+      if (receivedData && (receivedData.entries || Array.isArray(receivedData))) {
+        const incomingEntries = receivedData.entries || receivedData;
+        const count = smartMergeEntries(incomingEntries, receivedData.place, receivedData.date);
+        statusEl.innerText = '✅ இணைக்கப்பட்டது!';
+        statusEl.style.color = '#15803d';
+        localStorage.setItem('mukkan_saved_room_code', roomCode);
+        alert(`🎉 வெற்றி! '${roomCode}' அறை எண்ணில் இருந்து ${count} தொழிலாளர் கணக்குகள் பெறப்பட்டு உங்கள் பட்டியலுடன் வெற்றிகரமாக இணைக்கப்பட்டுவிட்டன!`);
+      } else {
+        statusEl.innerText = '❌ தரவு இல்லை';
+        statusEl.style.color = '#dc2626';
+        alert(`⚠️ '${roomCode}' அறை எண்ணில் கணக்குகள் எதுவும் இன்னும் பதிவேற்றப்படவில்லை!\n\nமுதலில் மற்றொரு போனில் கணக்குகளைச் சேர்த்துவிட்டு '☁️ பதிவேற்று' கொடுக்கவும்.`);
+      }
+    }
+
+    function mergeBackupFile(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const data = JSON.parse(e.target.result);
+          if (data && data.app === "mukkan_kanakku") {
+            const incoming = data.currentEntries || [];
+            if (incoming.length === 0) return alert('கணக்குகள் எதுவும் இல்லை!');
+            const count = smartMergeEntries(incoming);
+            alert(`🎉 வெற்றி! Backup கோப்பில் இருந்த ${count} கணக்குகள் வெற்றிகரமாக இணைக்கப்பட்டுவிட்டன!`);
+          } else {
+            alert('⚠️ தவறான Backup கோப்பு!');
+          }
+        } catch (err) {
+          alert('⚠️ கோப்பைப் படிப்பதில் பிழை!');
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = '';
+    }
+
+    function initSyncInputs() {
+      const savedRoom = localStorage.getItem('mukkan_saved_room_code');
+      const roomInput = document.getElementById('sangamRoomInput');
+      if (savedRoom && roomInput) roomInput.value = savedRoom;
+    }
+
+    initSyncInputs();
+    saveCurrentState();
+
+    // =========================================================================
+    // 🎙️ TAMIL VOICE RECOGNITION (WITH ADVANCE & PIDIMAANAM SUPPORT)
+    // =========================================================================
+    let modalSpeechRec = null;
+    let isModalListening = false;
+    let autoAddTimeout = null;
+    let voiceSessionEntries = [];
+    let isAutoAddNext = true;
+
+    const tamilInitialsMap = {
+      'பி': 'P.', 'பி.': 'P.', 'pee': 'P.', 'p': 'P.', 'பீ': 'P.',
+      'ஆர்': 'R.', 'ஆர்.': 'R.', 'ஆறு': 'R.', 'r': 'R.',
+      'எஸ்': 'S.', 'எஸ்.': 'S.', 's': 'S.',
+      'எம்': 'M.', 'எம்.': 'M.', 'm': 'M.',
+      'கே': 'K.', 'கே.': 'K.', 'k': 'K.',
+      'சி': 'C.', 'சி.': 'C.', 'c': 'C.',
+      'டி': 'D.', 'டி.': 'D.', 'd': 'D.',
+      'வி': 'V.', 'வி.': 'V.', 'v': 'V.',
+      'ஏ': 'A.', 'ஏ.': 'A.', 'a': 'A.',
+      'ஜெ': 'J.', 'ஜெ.': 'J.', 'j': 'J.',
+      'ஜி': 'G.', 'ஜி.': 'G.', 'g': 'G.',
+      'என்': 'N.', 'என்.': 'N.', 'n': 'N.',
+      'டி.என்': 'T.N.', 'ஐ': 'I.', 'i': 'I.',
+      'டி': 'T.', 't': 'T.'
+    };
+
+    function convertTamilWordsToNumbers(text) {
+      if (!text) return '';
+      let str = String(text);
+
+      str = str.replace(/ஆயிரத்து\s*எண்ணூறு/g, '1800')
+               .replace(/ஆயிரத்து\s*ஐநூறு/g, '1500')
+               .replace(/ஆயிரத்து\s*இருநூறு/g, '1200')
+               .replace(/ஆயிரத்து\s*நூறு/g, '1100')
+               .replace(/இரண்டாயிரத்து\s*ஐநூறு/g, '2500')
+               .replace(/இரண்டாயிரம்|ரெண்டாயிரம்/g, '2000')
+               .replace(/ஆயிரம்/g, '1000')
+               .replace(/தொள்ளாயிரத்து\s*ஐம்பது/g, '950')
+               .replace(/தொள்ளாயிரம்/g, '900')
+               .replace(/எண்ணூறு/g, '800')
+               .replace(/எழுநூறு/g, '700')
+               .replace(/அறுநூறு/g, '600')
+               .replace(/ஐநூறு/g, '500')
+               .replace(/நானூறு/g, '400')
+               .replace(/முந்நூறு/g, '300')
+               .replace(/இருநூறு|ரெண்டுநூறு/g, '200')
+               .replace(/நூறு/g, '100')
+               .replace(/ஐம்பது/g, '50')
+               .replace(/இருபது|இருவது/g, '20')
+               .replace(/முப்பது/g, '30')
+               .replace(/நாற்பது/g, '40');
+
+      str = str.replace(/\s*(?:கூட்டல்|பிளஸ்|ப்ளஸ்|\+)\s*/gi, '+');
+      return str;
+    }
+
+    function parseTamilVoiceInput(spokenText) {
+      if (!spokenText) return null;
+      let clean = String(spokenText).trim();
+      clean = convertTamilWordsToNumbers(clean);
+
+      let advance = 0;
+      const advMatch = clean.match(/(?:அட்வான்ஸ்|advance)\s*[:=-]?\s*(\d+)/i);
+      if (advMatch) {
+        advance = parseInt(advMatch[1]) || 0;
+        clean = clean.replace(advMatch[0], ' ').trim();
+      }
+
+      let pidimaanam = 0;
+      const pidiMatch = clean.match(/(?:பிடிமானம்|பிடித்தம்|பிடி|pidimaanam)\s*[:=-]?\s*(\d+)/i);
+      if (pidiMatch) {
+        pidimaanam = parseInt(pidiMatch[1]) || 0;
+        clean = clean.replace(pidiMatch[0], ' ').trim();
+      }
+
+      let countStr = '';
+      let namePart = clean;
+
+      const numMatches = [...clean.matchAll(/(\d+(?:\s*\+\s*\d+)*)/g)];
+      if (numMatches.length > 0) {
+        let chosenMatch = numMatches[numMatches.length - 1];
+        countStr = chosenMatch[1].replace(/\s+/g, '');
+        const matchIdx = clean.indexOf(chosenMatch[0]);
+        namePart = (clean.substring(0, matchIdx) + ' ' + clean.substring(matchIdx + chosenMatch[0].length)).trim();
+        namePart = namePart.replace(/(?:காய்|காய்கள்|தேங்காய்|காய்ங்க|எண்ணிக்கை|pieces|kai)/gi, '').trim();
+      }
+
+      namePart = namePart.replace(/[:\-=\(\)\/\|\_\*\&—–,]/g, ' ').replace(/\s+/g, ' ').trim();
+
+      const nameTokens = namePart.split(' ');
+      if (nameTokens.length > 1) {
+        const firstToken = nameTokens[0].toLowerCase();
+        if (tamilInitialsMap[firstToken]) {
+          nameTokens[0] = tamilInitialsMap[firstToken];
+          namePart = nameTokens.join(' ');
+        } else if (nameTokens[0].length <= 3 && tamilInitialsMap[nameTokens[0]]) {
+          nameTokens[0] = tamilInitialsMap[nameTokens[0]];
+          namePart = nameTokens.join(' ');
+        }
+      }
+
+      const allKnownNames = Array.from(new Set([...historicalNames, ...currentEntries.map(e => e.name)])).filter(Boolean);
+      for (const known of allKnownNames) {
+        const kClean = known.replace(/[^\p{L}\p{N}]/gu, '').toLowerCase();
+        const nClean = namePart.replace(/[^\p{L}\p{N}]/gu, '').toLowerCase();
+        if (kClean && (kClean === nClean || (kClean.includes(nClean) && nClean.length >= 3))) {
+          namePart = known;
+          break;
+        }
+      }
+
+      return {
+        name: namePart,
+        countStr: countStr,
+        advance: advance,
+        pidimaanam: pidimaanam,
+        rawSpoken: spokenText
+      };
+    }
+
+    function toggleAutoAddMode() {
+      const chk = document.getElementById('autoAddNextToggle');
+      isAutoAddNext = chk ? chk.checked : true;
+      const slider = document.getElementById('toggleSlider');
+      const circle = document.getElementById('toggleCircle');
+      if (slider && circle) {
+        if (isAutoAddNext) {
+          slider.style.backgroundColor = '#16a34a';
+          circle.style.left = '22px';
+        } else {
+          slider.style.backgroundColor = '#94a3b8';
+          circle.style.left = '3px';
+        }
+      }
+    }
+
+    function openVoiceModal() {
+      const modal = document.getElementById('voiceModal');
+      if (modal) {
+        modal.style.display = 'block';
+        voiceSessionEntries = [];
+        renderVoiceSessionList();
+        clearModalVoiceInput();
+        document.getElementById('modalVoiceStatus').innerHTML = '<span>👆</span> <b>பச்சை நிற மைக் பொத்தானை அழுத்திப் பேசவும்</b>';
+        document.getElementById('modalVoiceStatus').style.color = '#15803d';
+
+        // Direct call to start modal speech immediately
+        startModalSpeech();
+      }
+    }
+
+    function closeVoiceModal() {
+      stopModalSpeech();
+      if (autoAddTimeout) clearTimeout(autoAddTimeout);
+      const modal = document.getElementById('voiceModal');
+      if (modal) modal.style.display = 'none';
+      renderCurrentList();
+    }
+
+    function toggleModalSpeech() {
+      if (isModalListening) {
+        stopModalSpeech();
+      } else {
+        startModalSpeech();
+      }
+    }
+
+    async function startModalSpeech() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const statusEl = document.getElementById('modalVoiceStatus');
+      const micBtn = document.getElementById('modalMicBtn');
+      const input = document.getElementById('modalVoiceInput');
+
+      if (!SpeechRecognition) {
+        statusEl.innerHTML = '<span style="color:#b45309;">⚠️ உங்கள் பிரவுசரில் Web Speech API ஆதரிக்கப்படவில்லை. Google Chrome-ஐ பயன்படுத்தவும்.</span>';
+        if (input) input.focus();
+        return;
+      }
+
+      // Check audio permission via getUserMedia to prompt Chrome Android popup if needed
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          stream.getTracks().forEach(t => t.stop());
+        } catch(e) {
+          console.warn('getUserMedia prompt skipped/handled:', e);
+        }
+      }
+
+      try {
+        if (modalSpeechRec) {
+          try { modalSpeechRec.stop(); } catch(e) {}
+        }
+        modalSpeechRec = new SpeechRecognition();
+        modalSpeechRec.lang = 'ta-IN';
+        modalSpeechRec.continuous = false;
+        modalSpeechRec.interimResults = true;
+
+        modalSpeechRec.onstart = function() {
+          isModalListening = true;
+          statusEl.innerHTML = '<span style="color:#dc2626; font-size:13px; font-weight:800;">🔴 கேட்கிறது... இப்போது பேசவும் (எ.கா: நந்தகுமார் 580 காய் அட்வான்ஸ் 350 பிடிமானம் 30)</span>';
+          if (micBtn) {
+            micBtn.style.background = '#dc2626';
+            micBtn.style.transform = 'scale(1.1)';
+            micBtn.innerHTML = '🛑';
+          }
+          if (input) input.placeholder = '🎙️ கேட்கிறது... பேசுங்கள்...';
+        };
+
+        modalSpeechRec.onresult = function(event) {
+          let interim = '';
+          let final = '';
+          for (let i = event.resultIndex; i < event.results.length; ++i) {
+            if (event.results[i].isFinal) final += event.results[i][0].transcript;
+            else interim += event.results[i][0].transcript;
+          }
+          const spoken = final || interim;
+          if (spoken && input) {
+            input.value = spoken;
+            updateVoicePreview(spoken);
+          }
+
+          if (final) {
+            stopModalSpeech();
+            const parsed = parseTamilVoiceInput(final);
+            if (parsed && parsed.name && parsed.countStr && isAutoAddNext) {
+              scheduleAutoAdd();
+            }
+          }
+        };
+
+        modalSpeechRec.onerror = function(event) {
+          console.warn('SpeechRec error:', event.error);
+          stopModalSpeech();
+          if (event.error === 'not-allowed') {
+            statusEl.innerHTML = '<span style="color:#dc2626;">⚠️ மைக் அனுமதி தேவை: முகவரிப் பட்டியில் உள்ள 🔒 சின்னத்தைத் தொட்டு Mic அனுமதியை வழங்கவும்.</span>';
+          } else {
+            statusEl.innerHTML = '<span>👆</span> <b>மீண்டும் பச்சை நிற மைக்கைத் தொட்டுப் பேசவும்.</b>';
+          }
+        };
+
+        modalSpeechRec.onend = function() {
+          stopModalSpeech();
+        };
+
+        modalSpeechRec.start();
+      } catch (e) {
+        console.error('Speech recognition exception:', e);
+        stopModalSpeech();
+        statusEl.innerHTML = '<span>👆</span> <b>மீண்டும் பச்சை நிற மைக்கைத் தொட்டுப் பேசவும்.</b>';
+      }
+    }
+
+    function stopModalSpeech() {
+      isModalListening = false;
+      const statusEl = document.getElementById('modalVoiceStatus');
+      const micBtn = document.getElementById('modalMicBtn');
+      const input = document.getElementById('modalVoiceInput');
+      if (modalSpeechRec) {
+        try { modalSpeechRec.stop(); } catch(e) {}
+      }
+      if (statusEl && statusEl.innerHTML.includes('கேட்கிறது')) {
+        statusEl.innerHTML = '<span>👆</span> <b>பச்சை நிற மைக் பொத்தானை அழுத்திப் பேசவும்</b>';
+        statusEl.style.color = '#15803d';
+      }
+      if (micBtn) {
+        micBtn.style.background = 'linear-gradient(135deg, #16a34a, #15803d)';
+        micBtn.style.transform = 'scale(1)';
+        micBtn.innerHTML = '🎙️';
+      }
+      if (input && !input.value) {
+        input.placeholder = 'மைக் அழுத்திப் பேசவும்...';
+      }
+    }
+
+    function onModalVoiceInputChange() {
+      const input = document.getElementById('modalVoiceInput');
+      const text = input ? input.value : '';
+      updateVoicePreview(text);
+
+      if (autoAddTimeout) clearTimeout(autoAddTimeout);
+      const parsed = parseTamilVoiceInput(text);
+      if (parsed && parsed.name && parsed.countStr && isAutoAddNext) {
+        scheduleAutoAdd(900);
+      }
+    }
+
+    function scheduleAutoAdd(delayMs = 900) {
+      if (autoAddTimeout) clearTimeout(autoAddTimeout);
+      const countDownEl = document.getElementById('autoAddCountDown');
+      if (countDownEl) countDownEl.innerText = '⚡ தானாக சேர்கிறது...';
+
+      autoAddTimeout = setTimeout(() => {
+        if (countDownEl) countDownEl.innerText = '';
+        confirmAndAddVoiceEntry(true);
+      }, delayMs);
+    }
+
+    function clearModalVoiceInput() {
+      if (autoAddTimeout) clearTimeout(autoAddTimeout);
+      const input = document.getElementById('modalVoiceInput');
+      if (input) input.value = '';
+      document.getElementById('previewWorkerName').value = '';
+      document.getElementById('previewCoconutCount').value = '';
+      document.getElementById('previewAdvance').value = '';
+      document.getElementById('previewPidimaanam').value = '';
+      const countDownEl = document.getElementById('autoAddCountDown');
+      if (countDownEl) countDownEl.innerText = '';
+    }
+
+    function updateVoicePreview(text) {
+      const parsed = parseTamilVoiceInput(text);
+      if (parsed) {
+        document.getElementById('previewWorkerName').value = parsed.name || '';
+        document.getElementById('previewCoconutCount').value = parsed.countStr || '';
+        document.getElementById('previewAdvance').value = parsed.advance || 0;
+        document.getElementById('previewPidimaanam').value = parsed.pidimaanam || 0;
+      }
+    }
+
+    function confirmAndAddVoiceEntry(isLoopNext = true) {
+      if (autoAddTimeout) clearTimeout(autoAddTimeout);
+      const name = document.getElementById('previewWorkerName').value.trim();
+      const raw = document.getElementById('previewCoconutCount').value.trim();
+      const advance = Math.max(0, parseInt(document.getElementById('previewAdvance').value) || 0);
+      const pidimaanam = Math.max(0, parseInt(document.getElementById('previewPidimaanam').value) || 0);
+
+      if (!name || !raw) {
+        const input = document.getElementById('modalVoiceInput');
+        const textVal = input ? input.value.trim() : '';
+        if (textVal) {
+          const parsed = parseTamilVoiceInput(textVal);
+          if (parsed && parsed.name && parsed.countStr) {
+            return saveVoiceItem(parsed.name, parsed.countStr, parsed.advance, parsed.pidimaanam, isLoopNext);
+          }
+        }
+        alert('தொழிலாளி பெயர் மற்றும் காய் எண்ணிக்கை தெளிவாகக் குறிப்பிடவும்!');
+        return;
+      }
+
+      saveVoiceItem(name, raw, advance, pidimaanam, isLoopNext);
+    }
+
+    function saveVoiceItem(name, raw, advance, pidimaanam, isLoopNext) {
+      const count = evalSum(raw);
+      if (count <= 0) return alert('சரியான காய் எண்ணிக்கை குறிப்பிடவும்!');
+
+      const date = document.getElementById('entryDate').value;
+      const place = document.getElementById('placeName').value.trim();
+      const grossWage = Math.round(count * currentRate);
+      const netWage = grossWage - advance - pidimaanam;
+
+      if (!historicalNames.includes(name)) historicalNames.push(name);
+      if (place && !historicalPlaces.includes(place)) historicalPlaces.push(place);
+
+      const newEntry = {
+        id: Date.now() + Math.random(),
+        date, place, name, raw, count,
+        rate: currentRate,
+        grossWage,
+        advance,
+        pidimaanam,
+        netWage
+      };
+
+      currentEntries.push(newEntry);
+      voiceSessionEntries.unshift(newEntry);
+      saveCurrentState();
+
+      const banner = document.getElementById('lastAddedBanner');
+      if (banner) {
+        banner.style.display = 'block';
+        banner.innerHTML = `✅ <b>${name}</b>: <b>${count} காய்</b> சேர்க்கப்பட்டது! ${advance > 0 ? `(அட்: ₹${advance})` : ''} ${pidimaanam > 0 ? `(பிடிமானம்: ₹${pidimaanam})` : ''} ➔ அடுத்த ஆளைப் பேசலாம்`;
+        banner.style.animation = 'none';
+        banner.offsetHeight;
+        banner.style.animation = 'pulse 0.4s';
+      }
+
+      renderVoiceSessionList();
+      clearModalVoiceInput();
+
+      if (isLoopNext) {
+        setTimeout(() => {
+          startModalSpeech();
+        }, 500);
+      }
+    }
+
+    function renderVoiceSessionList() {
+      const countEl = document.getElementById('voiceSessionCount');
+      const kaiEl = document.getElementById('voiceSessionTotalKai');
+      const listEl = document.getElementById('voiceSessionItemsList');
+
+      if (!countEl || !listEl) return;
+
+      countEl.innerText = voiceSessionEntries.length;
+      const totKai = voiceSessionEntries.reduce((s, i) => s + (i.count || 0), 0);
+      kaiEl.innerText = totKai.toLocaleString('en-IN') + ' காய்';
+
+      if (voiceSessionEntries.length === 0) {
+        listEl.innerHTML = '<div style="text-align: center; color: #94a3b8; padding: 6px 0;">இன்னும் கணக்கு சேர்க்கப்படவில்லை</div>';
+        return;
+      }
+
+      listEl.innerHTML = voiceSessionEntries.map((e, idx) => `
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 0; border-bottom: 1px dashed #f1f5f9;">
+          <div>
+            <b>${e.name}</b>: <span style="color:#15803d; font-weight:800;">${e.count} காய்</span>
+            ${e.advance > 0 ? `<span style="color:#dc2626; font-size:11px;"> (அட்: ₹${e.advance})</span>` : ''}
+            ${e.pidimaanam > 0 ? `<span style="color:#b45309; font-size:11px;"> (பிடிமானம்: ₹${e.pidimaanam})</span>` : ''}
+          </div>
+          <button type="button" onclick="removeVoiceSessionEntry(${e.id})" style="background:#fee2e2; color:#dc2626; border:none; padding:2px 6px; border-radius:4px; font-size:11px; cursor:pointer;">நீக்கு</button>
+        </div>
+      `).join('');
+    }
+
+    function removeVoiceSessionEntry(id) {
+      currentEntries = currentEntries.filter(e => e.id !== id);
+      voiceSessionEntries = voiceSessionEntries.filter(e => e.id !== id);
+      saveCurrentState();
+      renderVoiceSessionList();
+    }
+  </script>
+
+  <!-- 🎙️ குரல் வழி கணக்கு பதிவு MODAL -->
+  <div id="voiceModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.75); z-index: 999999; padding: 14px; overflow-y: auto;">
+    <div style="background: white; border-radius: 18px; max-width: 460px; margin: 20px auto; padding: 18px; text-align: left; box-shadow: 0 10px 30px rgba(0,0,0,0.35); border: 2.5px solid #16a34a;">
+      
+      <!-- Modal Header -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 24px;">🎙️</span>
+          <div>
+            <h3 style="font-size: 16px; color: #166534; margin: 0; font-weight: 800;">குரல் வழி கணக்கு பதிவு</h3>
+            <span style="font-size: 11px; color: #64748b;">நேரடி மைக் மூலம் பேசியவுடன் தானாகப் பட்டியலில் சேரும்</span>
+          </div>
+        </div>
+        <button type="button" onclick="closeVoiceModal()" style="background: #fee2e2; color: #dc2626; border: none; font-size: 14px; font-weight: bold; width: 32px; height: 32px; border-radius: 50%; cursor: pointer;">✕</button>
+      </div>
+
+      <!-- Auto-Add Toggle Switch -->
+      <div style="display: flex; justify-content: space-between; align-items: center; background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 10px; padding: 8px 12px; margin-bottom: 12px;">
+        <span style="font-size: 12px; font-weight: 700; color: #166534;">⚡ தானாக பட்டியலில் சேர்த்து அடுத்த ஆள் கேட்க:</span>
+        <label style="position: relative; display: inline-block; width: 44px; height: 24px; margin: 0;">
+          <input type="checkbox" id="autoAddNextToggle" checked style="opacity: 0; width: 0; height: 0;" onchange="toggleAutoAddMode()">
+          <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #16a34a; transition: .3s; border-radius: 24px;" id="toggleSlider"></span>
+          <span style="position: absolute; content: ''; height: 18px; width: 18px; left: 22px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%;" id="toggleCircle"></span>
+        </label>
+      </div>
+
+      <!-- Last Added Success Banner -->
+      <div id="lastAddedBanner" style="display: none; background: #ecfdf5; border: 1.5px solid #34d399; border-radius: 10px; padding: 8px 12px; margin-bottom: 12px; font-size: 13px; font-weight: 800; color: #065f46; text-align: center;">
+        ✅ சேர்க்கப்பட்டது!
+      </div>
+
+      <!-- Direct Mic Button & Input -->
+      <div style="background: #f8fafc; border: 2px solid #86efac; border-radius: 14px; padding: 12px; margin-bottom: 14px; box-shadow: 0 2px 8px rgba(22,163,74,0.12);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <span style="font-size: 12.5px; font-weight: 800; color: #166534; display: flex; align-items: center; gap: 4px;">
+            <span>🎙️</span> <span>மைக் அழுத்திப் பேசவும்:</span>
+          </span>
+          <button type="button" onclick="clearModalVoiceInput()" style="background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer;">அழி</button>
+        </div>
+
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <button type="button" id="modalMicBtn" onclick="toggleModalSpeech()" style="background: linear-gradient(135deg, #16a34a, #15803d); color: white; border: none; width: 56px; height: 50px; border-radius: 10px; font-size: 26px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 3px 8px rgba(22,163,74,0.35); flex-shrink: 0; transition: all 0.2s;">
+            🎙️
+          </button>
+          <input type="text" id="modalVoiceInput" placeholder="மைக் அழுத்திப் பேசவும்..." oninput="onModalVoiceInputChange()" onkeydown="if(event.key==='Enter')confirmAndAddVoiceEntry(true)" style="flex: 1; height: 50px; padding: 10px 12px; font-size: 15px; font-weight: 800; border: 2px solid #16a34a; border-radius: 10px; outline: none; background: #ffffff; color: #0f172a;">
+        </div>
+
+        <div id="modalVoiceStatus" style="font-size: 11.5px; font-weight: 700; color: #15803d; margin-top: 8px;">
+          👆 <b>பச்சை நிற மைக் பொத்தானை அழுத்திப் பேசவும்</b> (எ.கா: <b>நந்தகுமார் 580 காய் அட்வான்ஸ் 350 பிடிமானம் 30</b>)
+        </div>
+      </div>
+
+      <!-- Extracted Result Preview Card -->
+      <div style="background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 10px 12px; margin-bottom: 12px;">
+        <div style="font-size: 11.5px; font-weight: 800; color: #166534; margin-bottom: 6px; border-bottom: 1px dashed #cbd5e1; padding-bottom: 4px; display: flex; justify-content: space-between;">
+          <span>🔍 கண்டறிந்த கணக்கு விவரம்:</span>
+          <span id="autoAddCountDown" style="color: #0284c7; font-weight: bold;"></span>
+        </div>
+        
+        <div style="display: flex; flex-direction: column; gap: 6px; font-size: 13px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="color: #475569; font-weight: bold;">👤 தொழிலாளி பெயர்:</span>
+            <input type="text" id="previewWorkerName" style="width: 170px; padding: 5px 8px; font-size: 13.5px; font-weight: 800; border: 1.5px solid #cbd5e1; border-radius: 6px; text-align: right; background: #f8fafc;" placeholder="பெயர் இல்லை">
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="color: #475569; font-weight: bold;">🥥 உரித்த காய்:</span>
+            <input type="text" id="previewCoconutCount" style="width: 170px; padding: 5px 8px; font-size: 13.5px; font-weight: 800; color: #15803d; border: 1.5px solid #cbd5e1; border-radius: 6px; text-align: right; background: #f8fafc;" placeholder="0">
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="color: #475569; font-weight: bold;">🔻 அட்வான்ஸ்:</span>
+            <input type="number" id="previewAdvance" style="width: 170px; padding: 5px 8px; font-size: 13px; font-weight: 800; color: #dc2626; border: 1.5px solid #cbd5e1; border-radius: 6px; text-align: right; background: #f8fafc;" placeholder="0">
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="color: #475569; font-weight: bold;">🏷️ பிடிமானம்:</span>
+            <input type="number" id="previewPidimaanam" style="width: 170px; padding: 5px 8px; font-size: 13px; font-weight: 800; color: #b45309; border: 1.5px solid #cbd5e1; border-radius: 6px; text-align: right; background: #f8fafc;" placeholder="0">
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+        <button type="button" id="btnAddAndNextVoiceBtn" onclick="confirmAndAddVoiceEntry(true)" style="flex: 1.5; background: #15803d; color: white; border: none; padding: 12px; border-radius: 10px; font-size: 14px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 3px 8px rgba(21,128,61,0.25);">
+          <span>➕ பட்டியலில் சேர்</span>
+          <span style="font-size: 12px; opacity: 0.9;">➔ அடுத்த ஆள்</span>
+        </button>
+        <button type="button" onclick="closeVoiceModal()" style="flex: 1; background: #475569; color: white; border: none; padding: 12px; border-radius: 10px; font-size: 13px; font-weight: bold; cursor: pointer;">
+          🏁 முடிந்தது (மூடு)
+        </button>
+      </div>
+
+      <!-- Live Session Mini List -->
+      <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px 10px; max-height: 130px; overflow-y: auto;">
+        <div style="display: flex; justify-content: space-between; font-size: 11.5px; font-weight: 800; color: #334155; margin-bottom: 4px; border-bottom: 1px solid #f1f5f9; padding-bottom: 3px;">
+          <span>📋 இப்போது சேர்க்கப்பட்டவை (<span id="voiceSessionCount">0</span> பேர்):</span>
+          <span id="voiceSessionTotalKai" style="color: #15803d;">0 காய்</span>
+        </div>
+        <div id="voiceSessionItemsList" style="font-size: 12px; color: #475569;">
+          <div style="text-align: center; color: #94a3b8; padding: 8px 0;">இன்னும் கணக்கு சேர்க்கப்படவில்லை</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</body>
+</html>
